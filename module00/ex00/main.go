@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"image/jpeg"
 	"image/png"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"os"
-	//"path/filepath"
+	"path/filepath"
 	"strings"
 )
 
@@ -26,32 +27,27 @@ func main() {
 		panic("invalid argument")
 	}
 	dir := os.Args[1]
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		panic(err)
-	}
-	for _, file := range files {
-		Convert(file.Name())
-	}
-	//result, err := FilePathWalkDir(dir)
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-	//for _, file := range result {
-	//	fmt.Println(file)
-	//}
+	ConvertAll(dir)
 }
 
-//func FilePathWalkDir(root string) ([]string, error) {
-//	var files []string
-//	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-//		if !info.IsDir() {
-//			files = append(files, path)
-//		}
-//		return nil
-//	})
-//	return files, err
-//}
+func ConvertAll(dir string) {
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+			return err
+		}
+		if d.Type().IsRegular() {
+			//fmt.Print("file!: ")
+			Convert(path)
+		}
+		//fmt.Printf("visited file or dir: %q\n", path)
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("error walking the path: %v\n", err)
+		return
+	}
+}
 
 func Convert(srcFileName string) {
 	fmt.Println("srcFileName: ", srcFileName)
