@@ -6,75 +6,77 @@ package main
 import (
 	"bytes"
 	"fmt"
-	//"image"
 	"image/jpeg"
 	"image/png"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "invalid argument")
-		return
-	}
-	fmt.Println("argument: ", os.Args[1])
-	files, err := ioutil.ReadDir(os.Args[1])
-	if err != nil {
-		log.Fatal(err)
-	}
-	var srcfile string
-	for i, file := range files {
-		fmt.Println(file.Name())
-		fmt.Println(i)
-		if file.Name() == "IMG_7323" {
-			srcfile = file.Name()
+	defer func() {
+		handler := recover()
+		if handler != nil {
+			fmt.Println("error:", handler)
 		}
+	}()
+	if len(os.Args) != 2 {
+		panic("invalid argument")
 	}
-	fmt.Println("srcfile: ", srcfile)
-	file, err := os.Open(srcfile)
+	dir := os.Args[1]
+	//files, err := ioutil.ReadDir(dir)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//for _, file := range files {
+	//	Convert(file.Name())
+	//}
+	result, err := FilePathWalkDir(dir)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
-	defer file.Close()
+	for _, file := range result {
+		fmt.Println(file)
+	}
+}
 
-	b, err := ioutil.ReadAll(file)
+func FilePathWalkDir(root string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
+}
+
+func Convert(srcFileName string) {
+	fmt.Println("srcFileName: ", srcFileName)
+	srcFile, err := os.Open(srcFileName)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	converted, err := ToPng(b)
+	defer srcFile.Close()
+	srcByte, err := ioutil.ReadAll(srcFile)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	//fmt.Println(converted)
-	dstfile, err := os.Create("tmp.png")
+	dstByte, err := ToPng(srcByte)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	defer dstfile.Close()
-	_, er := dstfile.Write(converted)
+	dstFile, err := os.Create(strings.TrimSuffix(srcFileName, ".jpg") + ".png")
+	if err != nil {
+		panic(err)
+	}
+	defer dstFile.Close()
+	_, er := dstFile.Write(dstByte)
 	if er != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	//// 出力
-	//fmt.Println("inside:", string(b))
-	//// ファイルオブジェクトを画像オブジェクトに変換
-	//img, _, err := image.Decode(file)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//// 出力ファイルを生成
-	//out, err := os.Create("tmp")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//defer out.Close()
-
-	//// 画像ファイル出力
-	////    jpeg.Encode(out, img, nil)
-	//png.Encode(out, img)
 }
 
 func ToPng(imageBytes []byte) ([]byte, error) {
@@ -96,35 +98,3 @@ func ToPng(imageBytes []byte) ([]byte, error) {
 	}
 	return nil, fmt.Errorf("unable to convert %#v to png", contentType)
 }
-
-//func main() {
-//	const width, height = 256, 256
-
-//	// Create a colored image of the given width and height.
-//	img := image.NewNRGBA(image.Rect(0, 0, width, height))
-
-//	for y := 0; y < height; y++ {
-//		for x := 0; x < width; x++ {
-//			img.Set(x, y, color.NRGBA{
-//				R: uint8((x + y) & 255),
-//				G: uint8((x + y) << 1 & 255),
-//				B: uint8((x + y) << 2 & 255),
-//				A: 255,
-//			})
-//		}
-//	}
-
-//	f, err := os.Create("image.png")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-
-//	if err := png.Encode(f, img); err != nil {
-//		f.Close()
-//		log.Fatal(err)
-//	}
-
-//	if err := f.Close(); err != nil {
-//		log.Fatal(err)
-//	}
-//}
