@@ -50,74 +50,47 @@ func ConvertAll(dir string) {
 }
 
 func jpg_to_png(srcFileName string) {
-	fmt.Println("srcFileName: ", srcFileName)
+	//fmt.Println("srcFileName: ", srcFileName)
 	srcFile, err := os.Open(srcFileName)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	defer srcFile.Close()
-	srcByte, err := ioutil.ReadAll(srcFile)
+	srcBytes, err := ioutil.ReadAll(srcFile)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+	}
+	dstBytes, err := ToPng(srcBytes)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 	dstFile, err := os.Create(strings.TrimSuffix(srcFileName, ".jpg") + ".png")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	defer dstFile.Close()
-	err = ToPng(srcByte, dstFile)
-	if err != nil {
-		panic(err)
+	_, er := dstFile.Write(dstBytes)
+	if er != nil {
+		fmt.Println(err)
 	}
-	//dstByte, err := ToPng(srcByte)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//dstFile, err := os.Create(strings.TrimSuffix(srcFileName, ".jpg") + ".png")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer dstFile.Close()
-	//_, er := dstFile.Write(dstByte)
-	//if er != nil {
-	//	panic(err)
-	//}
 }
 
-func ToPng(imageBytes []byte, dstfile *os.File) error {
-	contentType := http.DetectContentType(imageBytes)
+func ToPng(srcBytes []byte) ([]byte, error) {
+	contentType := http.DetectContentType(srcBytes)
 
 	switch contentType {
 	case "image/png":
 	case "image/jpeg":
-		img, err := jpeg.Decode(bytes.NewReader(imageBytes))
+		img, err := jpeg.Decode(bytes.NewReader(srcBytes))
 		if err != nil {
-			return fmt.Errorf("%v: unable to decode jpeg", err)
+			return nil, fmt.Errorf("%v: unable to decode jpeg", err)
 		}
-		if err := png.Encode(dstfile, img); err != nil {
-			return fmt.Errorf("%v: unable to encode png", err)
+		buf := new(bytes.Buffer)
+		if err := png.Encode(buf, img); err != nil {
+			return nil, fmt.Errorf("%v: unable to encode png", err)
 		}
-		return nil
+		return buf.Bytes(), nil
 	}
-	return fmt.Errorf("unable to convert %#v to png", contentType)
+	return nil, fmt.Errorf("unable to convert %#v to png", contentType)
 }
-
-//func ToPng(imageBytes []byte) ([]byte, error) {
-//	contentType := http.DetectContentType(imageBytes)
-
-//	switch contentType {
-//	case "image/png":
-//	case "image/jpeg":
-//		img, err := jpeg.Decode(bytes.NewReader(imageBytes))
-//		if err != nil {
-//			return nil, fmt.Errorf("%v: unable to decode jpeg", err)
-//		}
-
-//		buf := new(bytes.Buffer)
-//		if err := png.Encode(buf, img); err != nil {
-//			return nil, fmt.Errorf("%v: unable to encode png", err)
-//		}
-//		return buf.Bytes(), nil
-//	}
-//	return nil, fmt.Errorf("unable to convert %#v to png", contentType)
-//}
