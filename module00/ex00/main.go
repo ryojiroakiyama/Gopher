@@ -25,19 +25,30 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var srcfile string
 	for i, file := range files {
 		fmt.Println(file.Name())
 		fmt.Println(i)
+		if file.Name() == "test" {
+			srcfile = file.Name()
+		}
 	}
-	//fmt.Println(files[0].Name())
-	////file, err := os.OpenFile(string(files[0].Name()), os.O_WRONLY, 0644)
-	////file, err := os.OpenFile("./test", os.O_WRONLY, 0644)
-	//file, err := os.Open(files[0].Name())
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//defer file.Close()
-	//b, err := ioutil.ReadAll(file)
+	fmt.Println("srcfile: ", srcfile)
+	file, err := os.Open(files[0].Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	b, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	converted, err := ToPng(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(converted)
 	//// 出力
 	//fmt.Println("inside:", string(b))
 	//// ファイルオブジェクトを画像オブジェクトに変換
