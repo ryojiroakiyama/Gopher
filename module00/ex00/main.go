@@ -29,12 +29,12 @@ func main() {
 	for i, file := range files {
 		fmt.Println(file.Name())
 		fmt.Println(i)
-		if file.Name() == "test" {
+		if file.Name() == "IMG_7323" {
 			srcfile = file.Name()
 		}
 	}
 	fmt.Println("srcfile: ", srcfile)
-	file, err := os.Open(files[0].Name())
+	file, err := os.Open(srcfile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +48,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(converted)
+	//fmt.Println(converted)
+	dstfile, err := os.Create("tmp.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dstfile.Close()
+	_, er := dstfile.Write(converted)
+	if er != nil {
+		log.Fatal(err)
+	}
 	//// 出力
 	//fmt.Println("inside:", string(b))
 	//// ファイルオブジェクトを画像オブジェクトに変換
