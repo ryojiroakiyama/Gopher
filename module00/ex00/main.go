@@ -20,6 +20,5 @@ func main() {
 		panic("invalid argument")
 	}
 	dir := os.Args[1]
-	c := convert.Convert{Dir: dir}
-	c.JpgToPng()
+	convert.JpgToPng(dir)
 }

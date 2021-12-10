@@ -13,21 +13,19 @@ import (
 	"strings"
 )
 
-type Convert struct {
-	Dir string
+func JpgToPng(dir string) {
+	applyEachFile(dir, jpg_to_png)
 }
 
-func (c Convert) JpgToPng() {
-	err := filepath.WalkDir(c.Dir, func(path string, d fs.DirEntry, err error) error {
+func applyEachFile(dir string, applyFunc func(string)) {
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
 		}
 		if d.Type().IsRegular() {
-			//fmt.Print("file!: ")
-			jpg_to_png(path)
+			applyFunc(path)
 		}
-		//fmt.Printf("visited file or dir: %q\n", path)
 		return nil
 	})
 	if err != nil {
@@ -37,15 +35,16 @@ func (c Convert) JpgToPng() {
 }
 
 func jpg_to_png(srcFileName string) {
-	//fmt.Println("srcFileName: ", srcFileName)
 	srcFile, err := os.Open(srcFileName)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	defer srcFile.Close()
 	srcBytes, err := ioutil.ReadAll(srcFile)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	dstBytes, err := toPng(srcBytes)
 	if err != nil {
