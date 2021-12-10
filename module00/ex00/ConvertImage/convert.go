@@ -13,53 +13,73 @@ import (
 	"strings"
 )
 
-func JpgToPng(dir string) {
-	applyEachFile(dir, jpg_to_png)
+type converter interface {
+	convert(string)
 }
 
-func applyEachFile(dir string, applyFunc func(string)) {
+func JpgToPng(dir string) {
+	c := converterJpgToPng{}
+	applyEachFile(dir, c)
+}
+
+func applyEachFile(dir string, c converter) {
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
-			return err
+			return fmt.Errorf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 		}
 		if d.Type().IsRegular() {
-			applyFunc(path)
+			c.convert(path)
 		}
 		return nil
 	})
 	if err != nil {
 		fmt.Printf("error walking the path: %v\n", err)
-		return
 	}
 }
 
-func jpg_to_png(srcFileName string) {
-	srcFile, err := os.Open(srcFileName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer srcFile.Close()
-	srcBytes, err := ioutil.ReadAll(srcFile)
+type converterJpgToPng struct{}
+
+func (j converterJpgToPng) convert(srcFileName string) {
+	srcBytes, err := getSrcBytes(srcFileName)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	dstBytes, err := toPng(srcBytes)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("error:", srcFileName, err)
 		return
 	}
-	dstFile, err := os.Create(strings.TrimSuffix(srcFileName, ".jpg") + ".png")
+	err = makeDstFile(strings.TrimSuffix(srcFileName, ".jpg")+".png", dstBytes)
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer dstFile.Close()
-	_, er := dstFile.Write(dstBytes)
-	if er != nil {
-		fmt.Println(err)
+}
+
+func getSrcBytes(fileName string) ([]byte, error) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("fail to open: %v", err)
 	}
+	defer file.Close()
+	srcBytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("fail to raadall: %v", err)
+	}
+	return srcBytes, nil
+}
+
+func makeDstFile(fileName string, contents []byte) error {
+	dstFile, err := os.Create(fileName)
+	if err != nil {
+		return fmt.Errorf("fail to create: %v", err)
+	}
+	defer dstFile.Close()
+	_, er := dstFile.Write(contents)
+	if er != nil {
+		return fmt.Errorf("fail to write: %v", err)
+	}
+	return nil
 }
 
 func toPng(srcBytes []byte) ([]byte, error) {
@@ -67,16 +87,17 @@ func toPng(srcBytes []byte) ([]byte, error) {
 
 	switch contentType {
 	case "image/png":
+		return nil, fmt.Errorf("is a png file")
 	case "image/jpeg":
 		img, err := jpeg.Decode(bytes.NewReader(srcBytes))
 		if err != nil {
-			return nil, fmt.Errorf("%v: unable to decode jpeg", err)
+			return nil, fmt.Errorf(": unable to decode jpeg: %v", err)
 		}
 		buf := new(bytes.Buffer)
 		if err := png.Encode(buf, img); err != nil {
-			return nil, fmt.Errorf("%v: unable to encode png", err)
+			return nil, fmt.Errorf(": unable to encode png: %v", err)
 		}
 		return buf.Bytes(), nil
 	}
-	return nil, fmt.Errorf("unable to convert %#v to png", contentType)
+	return nil, fmt.Errorf("is not a valid file")
 }
