@@ -5,8 +5,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/ryojiroakiyama/convert"
 	"os"
+
+	"github.com/ryojiroakiyama/convertimage/converter"
 )
 
 func main() {
@@ -20,5 +21,5 @@ func main() {
 		panic("invalid argument")
 	}
 	dir := os.Args[1]
-	convert.JpgToPng(dir)
+	converter.JpgToPng(dir)
 }
