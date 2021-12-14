@@ -33,7 +33,7 @@ func applyEachFile(dir string, c converter) {
 		return nil
 	})
 	if err != nil {
-		fmt.Printf("error walking the path: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error walking the path: %v\n", err)
 	}
 }
 
@@ -42,17 +42,17 @@ type converterJpgToPng struct{}
 func (j converterJpgToPng) convert(srcFileName string) {
 	srcBytes, err := getSrcBytes(srcFileName)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 	dstBytes, err := toPng(srcBytes)
 	if err != nil {
-		fmt.Println("error:", srcFileName, err)
+		fmt.Fprintln(os.Stderr, "error:", srcFileName, err)
 		return
 	}
 	err = makeDstFile(strings.TrimSuffix(srcFileName, ".jpg")+".png", dstBytes)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 	}
 }
 
@@ -69,17 +69,21 @@ func getSrcBytes(fileName string) ([]byte, error) {
 	return srcBytes, nil
 }
 
-func makeDstFile(fileName string, contents []byte) error {
+func makeDstFile(fileName string, contents []byte) (err error) {
 	dstFile, err := os.Create(fileName)
 	if err != nil {
-		return fmt.Errorf("fail to create: %v", err)
+		err = fmt.Errorf("fail to create: %v", err)
 	}
-	defer dstFile.Close()
-	_, er := dstFile.Write(contents)
-	if er != nil {
-		return fmt.Errorf("fail to write: %v", err)
+	defer func() {
+		if cerr := dstFile.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
+	_, werr := dstFile.Write(contents)
+	if werr != nil {
+		err = fmt.Errorf("fail to write: %v", werr)
 	}
-	return nil
+	return
 }
 
 func toPng(srcBytes []byte) ([]byte, error) {

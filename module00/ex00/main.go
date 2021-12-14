@@ -14,7 +14,7 @@ func main() {
 	defer func() {
 		handler := recover()
 		if handler != nil {
-			fmt.Println("error:", handler)
+			fmt.Fprintln(os.Stderr, "error:", handler)
 		}
 	}()
 	if len(os.Args) != 2 {
