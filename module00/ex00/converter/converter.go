@@ -72,7 +72,7 @@ func getSrcBytes(fileName string) ([]byte, error) {
 func makeDstFile(fileName string, contents []byte) (err error) {
 	dstFile, err := os.Create(fileName)
 	if err != nil {
-		err = fmt.Errorf("fail to create: %v", err)
+		return fmt.Errorf("fail to create: %v", err)
 	}
 	defer func() {
 		if cerr := dstFile.Close(); cerr != nil {
@@ -81,7 +81,7 @@ func makeDstFile(fileName string, contents []byte) (err error) {
 	}()
 	_, werr := dstFile.Write(contents)
 	if werr != nil {
-		err = fmt.Errorf("fail to write: %v", werr)
+		return fmt.Errorf("fail to write: %v", werr)
 	}
 	return
 }

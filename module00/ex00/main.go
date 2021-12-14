@@ -11,14 +11,9 @@ import (
 )
 
 func main() {
-	defer func() {
-		handler := recover()
-		if handler != nil {
-			fmt.Fprintln(os.Stderr, "error:", handler)
-		}
-	}()
 	if len(os.Args) != 2 {
-		panic("invalid argument")
+		fmt.Fprintln(os.Stderr, "invalid argument")
+		return
 	}
 	dir := os.Args[1]
 	converter.JpgToPng(dir)
