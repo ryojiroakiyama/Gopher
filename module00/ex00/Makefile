@@ -31,14 +31,13 @@ fclean: clean
 		find ./images -name "*.png" | xargs rm -v
 
 .PHONY: run
-run:
-		$(GOBUILD) -o $(BINARY_NAME) -v ./...
-		./$(BINARY_NAME)
+run: build
+	./$(BINARY_NAME)
 
-.PHONY: deps
-deps:
-		$(GOGET) github.com/markbates/goth
-		$(GOGET) github.com/markbates/pop
+#.PHONY: deps
+#deps:
+#		$(GOGET) github.com/markbates/goth
+#		$(GOGET) github.com/markbates/pop
 
 
 # Cross compilation
