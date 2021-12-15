@@ -25,10 +25,7 @@ clean:
 		$(GOCLEAN)
 		rm -f $(BINARY_NAME)
 		rm -f $(BINARY_UNIX)
-
-.PHONY: fclean
-fclean: clean
-		find ./images -name "*.png" | xargs rm -v
+		./clean.sh
 
 .PHONY: run
 run: build
