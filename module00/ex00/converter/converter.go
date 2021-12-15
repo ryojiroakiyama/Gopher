@@ -13,8 +13,12 @@ import (
 	"strings"
 )
 
+func PrintError(err error) {
+	fmt.Fprintln(os.Stderr, "error:", err)
+}
+
 type converter interface {
-	convert(string)
+	convert(string) error
 }
 
 func JpgToPng(dir string) error {
@@ -22,44 +26,39 @@ func JpgToPng(dir string) error {
 	return applyEachFile(dir, c)
 }
 
-func applyEachFile(dir string, c converter) error {
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			//return fmt.Errorf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
-			return fmt.Errorf("^")
-		}
-		if d.IsDir() {
-			fmt.Println("------------------------", path)
-		}
-		if d.Type().IsRegular() {
-			c.convert(path)
+func applyEachFile(rootdir string, c converter) error {
+	err := filepath.WalkDir(rootdir, func(path string, d fs.DirEntry, werr error) error {
+		if werr != nil {
+			if path == rootdir {
+				return werr
+			}
+			PrintError(werr)
+		} else if d.Type().IsRegular() {
+			if cerr := c.convert(path); cerr != nil {
+				PrintError(cerr)
+			}
 		}
 		return nil
 	})
-	if err != nil {
-		//fmt.Fprintf(os.Stderr, "error walking the path: %v\n", err)
-		fmt.Fprintf(os.Stderr, "-")
-	}
 	return err
 }
 
 type converterJpgToPng struct{}
 
-func (j converterJpgToPng) convert(srcFileName string) {
+func (j converterJpgToPng) convert(srcFileName string) error {
 	srcBytes, err := getSrcBytes(srcFileName)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return
+		return err
 	}
 	dstBytes, err := toPng(srcBytes)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "error:", srcFileName, err)
-		return
+		return fmt.Errorf("%v %v", srcFileName, err)
 	}
 	err = makeDstFile(strings.TrimSuffix(srcFileName, ".jpg")+".png", dstBytes)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		return err
 	}
+	return nil
 }
 
 func getSrcBytes(fileName string) ([]byte, error) {
@@ -97,6 +96,7 @@ func toPng(srcBytes []byte) ([]byte, error) {
 
 	switch contentType {
 	case "image/png":
+		return nil, fmt.Errorf("is already a png file")
 	case "image/jpeg":
 		img, err := jpeg.Decode(bytes.NewReader(srcBytes))
 		if err != nil {
