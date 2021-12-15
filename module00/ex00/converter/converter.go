@@ -17,15 +17,19 @@ type converter interface {
 	convert(string)
 }
 
-func JpgToPng(dir string) {
+func JpgToPng(dir string) error {
 	c := converterJpgToPng{}
-	applyEachFile(dir, c)
+	return applyEachFile(dir, c)
 }
 
-func applyEachFile(dir string, c converter) {
+func applyEachFile(dir string, c converter) error {
 	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return fmt.Errorf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+			//return fmt.Errorf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+			return fmt.Errorf("^")
+		}
+		if d.IsDir() {
+			fmt.Println("------------------------", path)
 		}
 		if d.Type().IsRegular() {
 			c.convert(path)
@@ -33,8 +37,10 @@ func applyEachFile(dir string, c converter) {
 		return nil
 	})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error walking the path: %v\n", err)
+		//fmt.Fprintf(os.Stderr, "error walking the path: %v\n", err)
+		fmt.Fprintf(os.Stderr, "-")
 	}
+	return err
 }
 
 type converterJpgToPng struct{}
@@ -91,7 +97,6 @@ func toPng(srcBytes []byte) ([]byte, error) {
 
 	switch contentType {
 	case "image/png":
-		return nil, fmt.Errorf("is a png file")
 	case "image/jpeg":
 		img, err := jpeg.Decode(bytes.NewReader(srcBytes))
 		if err != nil {

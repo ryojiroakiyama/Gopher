@@ -16,5 +16,7 @@ func main() {
 		return
 	}
 	dir := os.Args[1]
-	converter.JpgToPng(dir)
+	if err := converter.JpgToPng(dir); err != nil {
+		fmt.Fprintln(os.Stderr, "main:", err)
+	}
 }

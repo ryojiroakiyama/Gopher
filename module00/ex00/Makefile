@@ -27,6 +27,9 @@ clean:
 		rm -f $(BINARY_UNIX)
 		./clean.sh
 
+.PHONY: re
+re: clean all
+
 .PHONY: run
 run: build
 	./$(BINARY_NAME)
