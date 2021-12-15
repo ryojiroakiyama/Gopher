@@ -15,6 +15,13 @@ type converter interface {
 	convert(string) error
 }
 
+/*
+** If fail to read root dir:
+**   -> Error. Do Nothing.
+**
+** Else	if something happen:
+**   -> Output what happens, and go to read the next file.
+ */
 func applyEachFile(rootdir string, c converter) error {
 	err := filepath.WalkDir(rootdir, func(path string, d fs.DirEntry, werr error) error {
 		if werr != nil {

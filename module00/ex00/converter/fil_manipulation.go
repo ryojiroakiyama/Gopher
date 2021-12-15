@@ -26,7 +26,7 @@ func makeDstFile(fileName string, contents []byte) (err error) {
 	}
 	defer func() {
 		if cerr := dstFile.Close(); cerr != nil {
-			err = cerr
+			err = fmt.Errorf("fail to close: %v", cerr)
 		}
 	}()
 	_, werr := dstFile.Write(contents)

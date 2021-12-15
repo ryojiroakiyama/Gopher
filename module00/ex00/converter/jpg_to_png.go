@@ -41,11 +41,11 @@ func toPng(srcBytes []byte) ([]byte, error) {
 	case "image/jpeg":
 		img, err := jpeg.Decode(bytes.NewReader(srcBytes))
 		if err != nil {
-			return nil, fmt.Errorf(": unable to decode jpeg: %v", err)
+			return nil, fmt.Errorf("unable to decode jpeg: %v", err)
 		}
 		buf := new(bytes.Buffer)
 		if err := png.Encode(buf, img); err != nil {
-			return nil, fmt.Errorf(": unable to encode png: %v", err)
+			return nil, fmt.Errorf("unable to encode png: %v", err)
 		}
 		return buf.Bytes(), nil
 	}
