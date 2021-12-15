@@ -14,7 +14,6 @@ UNDERLINE="\033[4m"
 BOLD_UNDERLINE="\033[1;4m"
 RESET="\033[0m"
 
-go build -o convert main.go
 ./convert images
 diff images/IconNoExtension.png answer/IconNoExtension.png
 if [ $? -eq 0 ]; then
