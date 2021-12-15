@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func PrintError(err error) {
+func printError(err error) {
 	fmt.Fprintln(os.Stderr, "error:", err)
 }
 
@@ -32,10 +32,10 @@ func applyEachFile(rootdir string, c converter) error {
 			if path == rootdir {
 				return werr
 			}
-			PrintError(werr)
+			printError(werr)
 		} else if d.Type().IsRegular() {
 			if cerr := c.convert(path); cerr != nil {
-				PrintError(cerr)
+				printError(cerr)
 			}
 		}
 		return nil
