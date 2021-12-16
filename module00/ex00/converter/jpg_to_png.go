@@ -10,7 +10,7 @@ import (
 )
 
 func JpgToPng(dir string) error {
-	c := converterJpgToPng{}
+	var c converter = converterJpgToPng{}
 	return applyEachFile(dir, c)
 }
 
