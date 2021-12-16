@@ -1,3 +1,3 @@
-module github.com/ryojiroakiyama/convertimage
+module github.com/ryojiroakiyama/convert
 
 go 1.17

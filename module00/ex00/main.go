@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ryojiroakiyama/convertimage/converter"
+	"github.com/ryojiroakiyama/convert/converter"
 )
 
 func printError(err error) {
