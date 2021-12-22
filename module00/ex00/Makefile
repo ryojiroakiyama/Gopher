@@ -13,7 +13,7 @@ all: build
 
 .PHONY: build
 build:
-		$(GOBUILD) -o $(BINARY_NAME) -v
+		$(GOBUILD)
 
 .PHONY: test
 test: build
@@ -23,8 +23,6 @@ test: build
 .PHONY: clean
 clean:
 		$(GOCLEAN)
-		rm -f $(BINARY_NAME)
-		rm -f $(BINARY_UNIX)
 		./clean.sh
 
 .PHONY: re
