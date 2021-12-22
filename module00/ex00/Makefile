@@ -30,7 +30,11 @@ re: clean all
 
 .PHONY: run
 run: build
-	./$(BINARY_NAME)
+	./$(BINARY_NAME) $(DIR)
+
+.PHONY: godoc
+godoc:
+	godoc -http=:6060
 
 #.PHONY: deps
 #deps:

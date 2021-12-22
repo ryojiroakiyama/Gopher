@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+//JpgToPng convert file format from Jpg to Png
 func JpgToPng(dir string) error {
 	var c converter = converterJpgToPng{}
 	return applyEachFile(dir, c)
