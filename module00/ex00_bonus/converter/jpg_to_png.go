@@ -3,50 +3,42 @@ package converter
 import (
 	"bytes"
 	"fmt"
-	"image/jpeg"
-	"image/png"
 	"net/http"
 	"strings"
 )
 
-//JpgToPng convert file format from Jpg to Png
-func JpgToPng(dir string) error {
-	var c converter = converterJpgToPng{}
-	return applyEachFile(dir, c)
-}
-
-type converterJpgToPng struct{}
-
-func (j converterJpgToPng) convert(srcFileName string) error {
+func convert(srcFileName string, c conversion) error {
 	srcBytes, err := getSrcBytes(srcFileName)
 	if err != nil {
 		return err
 	}
-	dstBytes, err := toPng(srcBytes)
+	dstBytes, err := toPng(srcBytes, c)
 	if err != nil {
 		return fmt.Errorf("%v %v", srcFileName, err)
 	}
-	err = makeDstFile(strings.TrimSuffix(srcFileName, ".jpg")+".png", dstBytes)
+	err = makeDstFile(strings.TrimSuffix(srcFileName, "."+c.srcExtension)+"."+c.dstExtension, dstBytes)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func toPng(srcBytes []byte) ([]byte, error) {
+func toPng(srcBytes []byte, c conversion) ([]byte, error) {
 	contentType := http.DetectContentType(srcBytes)
 
 	switch contentType {
-	case "image/png":
-		return nil, fmt.Errorf("is already a png file")
-	case "image/jpeg":
-		img, err := jpeg.Decode(bytes.NewReader(srcBytes))
+	case "image/" + c.dstExtension:
+		return nil, fmt.Errorf("is already a %s format file", c.dstExtension)
+	case "image/" + c.srcExtension:
+		//img, err := jpeg.Decode(bytes.NewReader(srcBytes))
+		img, err := c.decoder.decode(bytes.NewReader(srcBytes))
 		if err != nil {
-			return nil, fmt.Errorf("unable to decode jpeg: %v", err)
+			return nil, fmt.Errorf("unable to decode from %s: %v", c.srcExtension, err)
 		}
 		buf := new(bytes.Buffer)
-		if err := png.Encode(buf, img); err != nil {
-			return nil, fmt.Errorf("unable to encode png: %v", err)
+		//if err := png.Encode(buf, img); err != nil {
+		if err := c.encoder.encode(buf, img); err != nil {
+			return nil, fmt.Errorf("unable to encode to %s: %v", c.dstExtension, err)
 		}
 		return buf.Bytes(), nil
 	}
