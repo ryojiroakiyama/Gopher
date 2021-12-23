@@ -26,21 +26,19 @@ func Do(dir string, srcExt string, dstExt string) error {
 		dstExtension: dstExt,
 	}
 	var err error
-	c.decoder, err = getImage(srcExt)
+	c.decoder, err = getImages(srcExt)
 	if err != nil {
 		return err
 	}
-	c.encoder, err = getImage(dstExt)
+	c.encoder, err = getImages(dstExt)
 	if err != nil {
 		return err
 	}
-	fmt.Println("---->", c.srcExtension, c.dstExtension)
-	//os.Exit(0)
 	applyEachFile(dir, c)
 	return nil
 }
 
-func getImage(Extension string) (images, error) {
+func getImages(Extension string) (images, error) {
 	switch Extension {
 	case "jpg":
 		return imageJpg{}, nil
