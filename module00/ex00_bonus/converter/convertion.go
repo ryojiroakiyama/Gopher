@@ -12,7 +12,7 @@ func convert(srcFileName string, c conversion) error {
 	if err != nil {
 		return err
 	}
-	dstBytes, err := toPng(srcBytes, c)
+	dstBytes, err := convertionImage(srcBytes, c)
 	if err != nil {
 		return fmt.Errorf("%v %v", srcFileName, err)
 	}
@@ -23,20 +23,29 @@ func convert(srcFileName string, c conversion) error {
 	return nil
 }
 
-func toPng(srcBytes []byte, c conversion) ([]byte, error) {
+func getTypeName(extesion string) string {
+	switch extesion {
+	case "jpg":
+		return "image/jpeg"
+	default:
+		return "image/" + extesion
+	}
+}
+
+func convertionImage(srcBytes []byte, c conversion) ([]byte, error) {
 	contentType := http.DetectContentType(srcBytes)
+	srcType := getTypeName(c.srcExtension)
+	dstType := getTypeName(c.dstExtension)
 
 	switch contentType {
-	case "image/" + c.dstExtension:
+	case dstType:
 		return nil, fmt.Errorf("is already a %s format file", c.dstExtension)
-	case "image/" + c.srcExtension:
-		//img, err := jpeg.Decode(bytes.NewReader(srcBytes))
+	case srcType:
 		img, err := c.decoder.decode(bytes.NewReader(srcBytes))
 		if err != nil {
 			return nil, fmt.Errorf("unable to decode from %s: %v", c.srcExtension, err)
 		}
 		buf := new(bytes.Buffer)
-		//if err := png.Encode(buf, img); err != nil {
 		if err := c.encoder.encode(buf, img); err != nil {
 			return nil, fmt.Errorf("unable to encode to %s: %v", c.dstExtension, err)
 		}
