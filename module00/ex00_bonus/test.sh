@@ -41,7 +41,7 @@ ANSSUB=$ANSROOT/$SUBDIR
 FILE1=Icon.png
 FILE2=IconNoExtension.png
 
-./convert images
+#./convert images
 test $ORIROOT/$FILE1 $ANSROOT/$FILE1
 test $ORIROOT/$FILE2 $ANSROOT/$FILE2
 test $ORISUB/$FILE1 $ANSSUB/$FILE1
