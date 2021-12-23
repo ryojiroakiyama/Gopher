@@ -32,9 +32,13 @@ re: clean all
 run: build
 	./$(BINARY_NAME) $(DIR)
 
-.PHONY: godoc
-godoc:
+.PHONY: doc
+doc:
 	godoc -http=:6060
+
+.PHONY: imports
+imports:
+	goimports -w main.go converter/*
 
 #.PHONY: deps
 #deps:
@@ -49,3 +53,10 @@ build-linux:
 #.PHONY: docker-build
 #docker-build:
 #		docker run --rm -it -v "$(GOPATH)":/go -w /go/src/bitbucket.org/rsohlich/makepost golang:latest go build -o "$(BINARY_UNIX)" -v
+
+#goimports #code clean # -w -> overwrite
+#golint #detect unlike gostyle #not recommended
+#go vet #detect error like bug
+#errcheck #detect miss of error checking
+#statickcheck #thirdparty
+#GolangCI-Lint #thrdparty Linter Runner
