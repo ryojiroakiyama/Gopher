@@ -13,17 +13,15 @@ all: build
 
 .PHONY: build
 build:
-		$(GOBUILD)
+	$(GOBUILD)
 
 .PHONY: test
 test: build
-		./test.sh
-#		$(GOTEST) -v ./...
+	$(GOTEST) -v ./...
 
 .PHONY: clean
 clean:
 		$(GOCLEAN)
-		./clean.sh
 
 .PHONY: re
 re: clean all
