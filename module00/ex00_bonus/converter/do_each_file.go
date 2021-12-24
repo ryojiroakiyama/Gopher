@@ -11,6 +11,13 @@ import (
 	"path/filepath"
 )
 
+type conversion struct {
+	srcExtension string
+	dstExtension string
+	encoder      images
+	decoder      images
+}
+
 func printError(err error) {
 	fmt.Fprintln(os.Stderr, "error:", err)
 }
@@ -29,8 +36,7 @@ func Do(dir string, srcExt string, dstExt string) error {
 	if err != nil {
 		return err
 	}
-	applyEachFile(dir, c)
-	return nil
+	return applyEachFile(dir, c)
 }
 
 func getImages(Extension string) (images, error) {
