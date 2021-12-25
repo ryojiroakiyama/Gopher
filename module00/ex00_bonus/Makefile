@@ -7,6 +7,9 @@ GOGET=$(GOCMD) get
 BINARY_NAME=convert
 BINARY_UNIX=$(BINARY_NAME)_unix
 
+# file name
+COVERAGE=coverage.out
+
 # Make rule
 .PHONY: all
 all: build
@@ -17,11 +20,18 @@ build:
 
 .PHONY: test
 test: build
-	$(GOTEST) -v ./...
+	go test -v ./...
+
+.PHONY: cover
+cover:
+	$(GOTEST) -v ./... -cover -coverprofile $(COVERAGE)
+	go tool cover -func=$(COVERAGE)
+	go tool cover -html=$(COVERAGE)
 
 .PHONY: clean
 clean:
 		$(GOCLEAN)
+		rm $(COVERAGE)
 
 .PHONY: re
 re: clean all
@@ -42,7 +52,6 @@ imports:
 #deps:
 #		$(GOGET) github.com/markbates/goth
 #		$(GOGET) github.com/markbates/pop
-
 
 # Cross compilation
 .PHONY: build-linux
