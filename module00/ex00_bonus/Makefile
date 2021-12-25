@@ -31,7 +31,7 @@ cover:
 .PHONY: clean
 clean:
 		$(GOCLEAN)
-		rm $(COVERAGE)
+		rm -f $(COVERAGE)
 
 .PHONY: re
 re: clean all
