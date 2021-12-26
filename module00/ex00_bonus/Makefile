@@ -22,6 +22,10 @@ build:
 test: build
 	go test -v ./...
 
+.PHONY: tests
+tests:
+	gotests -w -parallel -all ./...
+
 .PHONY: cover
 cover:
 	$(GOTEST) -v ./... -cover -coverprofile $(COVERAGE)
