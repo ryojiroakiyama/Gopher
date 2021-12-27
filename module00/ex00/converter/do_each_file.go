@@ -19,7 +19,7 @@ func printError(err error) {
 //and convert the file format from srcExt to dstExt
 //if the file is srcExt format.
 //If fail to read dir, regard it as an error and do nothing.
-//Else	if something happen, output a message about what happened 
+//Else	if something happen, output a message about what happened
 //and go to read the next file.
 func Do(dir string, srcExt string, dstExt string) error {
 	c := conversion{
@@ -38,8 +38,8 @@ func Do(dir string, srcExt string, dstExt string) error {
 	return applyEachFile(dir, c)
 }
 
-func getImages(Extension string) (images, error) {
-	switch Extension {
+func getImages(extension string) (images, error) {
+	switch extension {
 	case JPG:
 		return imageJpg{}, nil
 	case PNG:
@@ -47,7 +47,7 @@ func getImages(Extension string) (images, error) {
 	case GIF:
 		return imageGif{}, nil
 	default:
-		return nil, fmt.Errorf("invalid argment: %v", Extension)
+		return nil, fmt.Errorf("invalid argment: %v", extension)
 	}
 }
 

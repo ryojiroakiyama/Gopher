@@ -1,6 +1,5 @@
-/*
-** package main
- */
+//Package main apply conversion process to all files
+//in the directory passed as argument.
 package main
 
 import (
@@ -43,6 +42,10 @@ func printHelp() {
 	fmt.Println("  o: format convert to, default png")
 }
 
+//main read all the files in the dir and call Do method.
+//If fail to read dir, output the error and do nothing.
+//Else if something happen, output a message about the thing
+//and go to read the next file.
 func main() {
 	if len(os.Args) == 1 {
 		printError(errors.New("invalid argument"))

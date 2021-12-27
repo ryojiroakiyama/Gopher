@@ -10,9 +10,12 @@ import (
 )
 
 const (
-	JPG = "jpg"
-	PNG = "png"
-	GIF = "gif"
+	JPG     = "jpg"
+	PNG     = "png"
+	GIF     = "gif"
+	JPGTYPE = "image/jpeg"
+	PNGTYPE = "image/png"
+	GIFTYPE = "image/gif"
 )
 
 func NewConverter(srcFormat string, dstFormat string) (*Converter, error) {
@@ -32,8 +35,8 @@ func NewConverter(srcFormat string, dstFormat string) (*Converter, error) {
 	}, nil
 }
 
-func getAction(Extension string) (Action, error) {
-	switch Extension {
+func getAction(extension string) (Action, error) {
+	switch extension {
 	case JPG:
 		return ActionJpg{}, nil
 	case PNG:
@@ -41,7 +44,7 @@ func getAction(Extension string) (Action, error) {
 	case GIF:
 		return ActionGif{}, nil
 	default:
-		return nil, fmt.Errorf("invalid argment: %v", Extension)
+		return nil, fmt.Errorf("invalid argment: %v", extension)
 	}
 }
 

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func getSrcBytes(fileName string) ([]byte, error) {
+func getBytes(fileName string) ([]byte, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("fail to open: %v", err)
@@ -19,7 +19,7 @@ func getSrcBytes(fileName string) ([]byte, error) {
 	return srcBytes, nil
 }
 
-func makeDstFile(fileName string, contents []byte) (err error) {
+func makeFile(fileName string, contents []byte) (err error) {
 	dstFile, err := os.Create(fileName)
 	if err != nil {
 		return fmt.Errorf("fail to create: %v", err)
