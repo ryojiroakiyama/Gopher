@@ -1,5 +1,5 @@
-//Package converter provides ability to convert
-//from one file format to another format.
+//Package converter provides ability to convert file format
+//according to the specified format.
 //This process is applied to all files
 //in the directory passed as argument.
 package converter
@@ -15,6 +15,12 @@ func printError(err error) {
 	fmt.Fprintln(os.Stderr, "error:", err)
 }
 
+//Do read all the files in the dir,
+//and convert the file format from srcExt to dstExt
+//if the file is srcExt format.
+//If fail to read dir, regard it as an error and do nothing.
+//Else	if something happen, output a message about what happened 
+//and go to read the next file.
 func Do(dir string, srcExt string, dstExt string) error {
 	c := conversion{
 		srcExtension: srcExt,
@@ -45,13 +51,6 @@ func getImages(Extension string) (images, error) {
 	}
 }
 
-/*
-** If fail to read root dir:
-**   -> Error. Do Nothing.
-**
-** Else	if something happen:
-**   -> Output what happens, and go to read the next file.
- */
 func applyEachFile(rootdir string, c conversion) error {
 	err := filepath.WalkDir(rootdir, func(path string, d fs.DirEntry, werr error) error {
 		if werr != nil {

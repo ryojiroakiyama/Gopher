@@ -1,7 +1,3 @@
-//Package converter provides ability to convert
-//from one file format to another format.
-//This process is applied to all files
-//in the directory passed as argument.
 package converter
 
 import (
