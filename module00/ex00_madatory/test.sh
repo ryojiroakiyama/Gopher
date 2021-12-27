@@ -47,11 +47,11 @@ test $ORIROOT/$FILE2 $ANSROOT/$FILE2
 test $ORISUB/$FILE1 $ANSSUB/$FILE1
 test $ORISUB/$FILE2 $ANSSUB/$FILE2
 
-# test 2
-ORIROOT=images_contain_no_permission
+## test 2
+#ORIROOT=images_contain_no_permission
 
-./convert images_contain_no_permission
-test $ORIROOT/$FILE1 $ANSROOT/$FILE1
-test $ORIROOT/$FILE2 $ANSROOT/$FILE2
-test $ORISUB/$FILE1 $ANSSUB/$FILE1
-test $ORISUB/$FILE2 $ANSSUB/$FILE2
+#./convert images_contain_no_permission
+#test $ORIROOT/$FILE1 $ANSROOT/$FILE1
+#test $ORIROOT/$FILE2 $ANSROOT/$FILE2
+#test $ORISUB/$FILE1 $ANSSUB/$FILE1
+#test $ORISUB/$FILE2 $ANSSUB/$FILE2
