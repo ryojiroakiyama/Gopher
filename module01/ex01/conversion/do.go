@@ -16,27 +16,27 @@ func (c Converter) Do(srcFileName string) error {
 	if err != nil {
 		return err
 	}
-	dstBytes, err := c.ConvertFormat(srcBytes)
+	dstBytes, err := c.convertFormat(srcBytes)
 	if err != nil {
 		return fmt.Errorf("%v %v", srcFileName, err)
 	}
 	if dstBytes != nil {
-		if err = makeFile(c.DstFileName(srcFileName), dstBytes); err != nil {
+		if err = makeFile(c.dstFileName(srcFileName), dstBytes); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (c Converter) DstFileName(srcFileName string) string {
+func (c Converter) dstFileName(srcFileName string) string {
 	return strings.TrimSuffix(srcFileName, "."+c.srcExtension) + "." + c.dstExtension
 }
 
-func (c Converter) ConvertFormat(srcBytes []byte) ([]byte, error) {
+func (c Converter) convertFormat(srcBytes []byte) ([]byte, error) {
 	contentType := http.DetectContentType(srcBytes)
 
 	switch contentType {
-	case GetTypeName(c.srcExtension):
+	case getTypeName(c.srcExtension):
 		img, err := c.decoder.decode(bytes.NewReader(srcBytes))
 		if err != nil {
 			return nil, fmt.Errorf("fail to decode from %s: %v", c.srcExtension, err)
@@ -53,7 +53,7 @@ func (c Converter) ConvertFormat(srcBytes []byte) ([]byte, error) {
 	}
 }
 
-func GetTypeName(extesion string) string {
+func getTypeName(extesion string) string {
 	switch extesion {
 	case JPG:
 		return JPGTYPE

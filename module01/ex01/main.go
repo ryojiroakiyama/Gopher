@@ -42,23 +42,31 @@ func printHelp() {
 	fmt.Println("  o: format convert to, default png")
 }
 
+func argument() (string, string, string, bool) {
+	if len(os.Args) == 1 {
+		printError(errors.New("invalid argument"))
+		return "", "", "", true
+	} else if os.Args[1] == "-h" || os.Args[1] == "--help" {
+		printHelp()
+		return "", "", "", true
+	}
+	var informat = flag.String("i", "jpg", "file format convert from")
+	var outformat = flag.String("o", "png", "file format convert to")
+	flag.Parse()
+	var dir = flag.Arg(0)
+	return dir, *informat, *outformat, false
+}
+
 //main read all the files in the dir and call Do method.
 //If fail to read dir, output the error and do nothing.
 //Else if something happen, output a message about the thing
 //and go to read the next file.
 func main() {
-	if len(os.Args) == 1 {
-		printError(errors.New("invalid argument"))
-		return
-	} else if os.Args[1] == "-h" || os.Args[1] == "--help" {
-		printHelp()
+	rootdir, srcExtension, dstExtension, is_end := argument()
+	if is_end {
 		return
 	}
-	var informat = flag.String("i", "jpg", "file format convert from")
-	var outformat = flag.String("o", "png", "file format convert to")
-	flag.Parse()
-	var rootdir = flag.Arg(0)
-	c, err := conversion.NewConverter(*informat, *outformat)
+	c, err := conversion.NewConverter(srcExtension, dstExtension)
 	if err != nil {
 		printError(err)
 		return
