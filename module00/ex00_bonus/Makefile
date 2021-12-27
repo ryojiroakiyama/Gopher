@@ -20,7 +20,7 @@ build:
 
 .PHONY: test
 test: build
-	go test -v ./...
+	go test -v -race ./...
 
 .PHONY: tests
 tests:
@@ -28,7 +28,7 @@ tests:
 
 .PHONY: cover
 cover:
-	$(GOTEST) -v ./... -cover -coverprofile $(COVERAGE)
+	$(GOTEST) -v ./... -cover -coverprofile=$(COVERAGE)
 	go tool cover -func=$(COVERAGE)
 	go tool cover -html=$(COVERAGE)
 
