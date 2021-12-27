@@ -54,7 +54,7 @@ doc:
 
 .PHONY: imports
 imports:
-	goimports -w main.go converter/*
+	goimports -w main.go conversion/*
 
 
 #.PHONY: deps
