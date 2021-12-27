@@ -29,7 +29,7 @@ func convert(srcFileName string, c conversion) error {
 
 func getTypeName(extesion string) string {
 	switch extesion {
-	case "jpg":
+	case JPG:
 		return "image/jpeg"
 	default:
 		return "image/" + extesion

@@ -20,8 +20,8 @@ func Test_getDstFileName(t *testing.T) {
 			args: args{
 				srcFileName: "src",
 				c: conversion{
-					srcExtension: "jpg",
-					dstExtension: "png",
+					srcExtension: JPG,
+					dstExtension: PNG,
 				},
 			},
 			want: "src.png",

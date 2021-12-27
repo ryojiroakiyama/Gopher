@@ -11,13 +11,6 @@ import (
 	"path/filepath"
 )
 
-type conversion struct {
-	srcExtension string
-	dstExtension string
-	encoder      images
-	decoder      images
-}
-
 func printError(err error) {
 	fmt.Fprintln(os.Stderr, "error:", err)
 }
@@ -41,11 +34,11 @@ func Do(dir string, srcExt string, dstExt string) error {
 
 func getImages(Extension string) (images, error) {
 	switch Extension {
-	case "jpg":
+	case JPG:
 		return imageJpg{}, nil
-	case "png":
+	case PNG:
 		return imagePng{}, nil
-	case "gif":
+	case GIF:
 		return imageGif{}, nil
 	default:
 		return nil, fmt.Errorf("invalid argment: %v", Extension)

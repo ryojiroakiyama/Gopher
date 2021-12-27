@@ -12,6 +12,19 @@ import (
 	"io"
 )
 
+const (
+	JPG = "jpg"
+	PNG = "png"
+	GIF = "gif"
+)
+
+type conversion struct {
+	srcExtension string
+	dstExtension string
+	encoder      images
+	decoder      images
+}
+
 type images interface {
 	decode(r io.Reader) (image.Image, error)
 	encode(w io.Writer, m image.Image) error
