@@ -20,7 +20,7 @@ build:
 
 .PHONY: test
 test: build
-	go test -v -race ./...
+	go test -run "" -race ./...
 
 .PHONY: tests
 tests:

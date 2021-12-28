@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ryojiroakiyama/convert/conversion"
+	"github.com/ryojiroakiyama/convert/imgconv"
 )
 
 const (

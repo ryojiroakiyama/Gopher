@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ryojiroakiyama/convert/conversion"
+	"github.com/ryojiroakiyama/convert/imgconv"
 )
 
 func TestNewConverter(t *testing.T) {
