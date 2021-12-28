@@ -28,10 +28,10 @@ func NewConverter(srcFormat string, dstFormat string) (*Converter, error) {
 		return nil, err
 	}
 	return &Converter{
-		srcExtension: srcFormat,
-		dstExtension: dstFormat,
-		encoder:      encodeAction,
-		decoder:      decodeAction,
+		SrcExtension: srcFormat,
+		DstExtension: dstFormat,
+		Encoder:      encodeAction,
+		Decoder:      decodeAction,
 	}, nil
 }
 
@@ -49,11 +49,27 @@ func getAction(extension string) (Action, error) {
 }
 
 type Converter struct {
-	srcExtension string
-	dstExtension string
-	encoder      Action
-	decoder      Action
+	SrcExtension string
+	DstExtension string
+	Decoder      Action
+	Encoder      Action
 }
+
+//func (c Converter) GetSrcExt() string {
+//	return c.SrcExtension
+//}
+
+//func (c Converter) GetDstExt() string {
+//	return c.DstExtension
+//}
+
+//func (c Converter) GetEncoder() Action {
+//	return c.Encoder
+//}
+
+//func (c Converter) GetDecoder() Action {
+//	return c.Decoder
+//}
 
 type Action interface {
 	decode(r io.Reader) (image.Image, error)

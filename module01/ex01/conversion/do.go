@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-//Do convert srcFileName file format from srcExtension to dstExtension
+//Do convert srcFileName file format from SrcExtension to DstExtension
 //and create the file.
 func (c Converter) Do(srcFileName string) error {
 	srcBytes, err := getBytes(srcFileName)
@@ -29,21 +29,21 @@ func (c Converter) Do(srcFileName string) error {
 }
 
 func (c Converter) dstFileName(srcFileName string) string {
-	return strings.TrimSuffix(srcFileName, "."+c.srcExtension) + "." + c.dstExtension
+	return strings.TrimSuffix(srcFileName, "."+c.SrcExtension) + "." + c.DstExtension
 }
 
 func (c Converter) convertFormat(srcBytes []byte) ([]byte, error) {
 	contentType := http.DetectContentType(srcBytes)
 
 	switch contentType {
-	case getTypeName(c.srcExtension):
-		img, err := c.decoder.decode(bytes.NewReader(srcBytes))
+	case getTypeName(c.SrcExtension):
+		img, err := c.Decoder.decode(bytes.NewReader(srcBytes))
 		if err != nil {
-			return nil, fmt.Errorf("fail to decode from %s: %v", c.srcExtension, err)
+			return nil, fmt.Errorf("fail to decode from %s: %v", c.SrcExtension, err)
 		}
 		buf := new(bytes.Buffer)
-		if err := c.encoder.encode(buf, img); err != nil {
-			return nil, fmt.Errorf("fail to encode to %s: %v", c.dstExtension, err)
+		if err := c.Encoder.encode(buf, img); err != nil {
+			return nil, fmt.Errorf("fail to encode to %s: %v", c.DstExtension, err)
 		}
 		return buf.Bytes(), nil
 	case JPGTYPE, PNGTYPE, GIFTYPE:
