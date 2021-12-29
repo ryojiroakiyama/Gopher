@@ -28,7 +28,7 @@ tests:
 
 .PHONY: cover
 cover:
-	$(GOTEST) -v ./... -cover -coverprofile=$(COVERAGE)
+	$(GOTEST) ./... -cover -coverprofile=$(COVERAGE)
 	go tool cover -func=$(COVERAGE)
 	go tool cover -html=$(COVERAGE)
 
