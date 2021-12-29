@@ -15,7 +15,10 @@ import (
 func TestConverter_Do(t *testing.T) {
 	testdir := "../testdata/"
 	jFile := testdir + "OriginalJpg.jpg"
+	gFile := testdir + "OriginalGif.gif"
+	tFile := testdir + "test.txt"
 	pngImage := "image/png"
+	jpgImage := "image/jpeg"
 	type fields struct {
 		SrcExtension string
 		DstExtension string
@@ -48,6 +51,36 @@ func TestConverter_Do(t *testing.T) {
 			wantFile:  dstFileName(jFile, "jpg", "png"),
 			wantImage: pngImage,
 		},
+		{
+			name: "gtoj",
+			fields: fields{
+				SrcExtension: "gif",
+				DstExtension: "jpg",
+				Decoder:      conversion.ActionGif{},
+				Encoder:      conversion.ActionJpg{},
+			},
+			args: args{
+				srcFileName: gFile,
+			},
+			wantErr:   false,
+			wantFile:  dstFileName(gFile, "gif", "jpg"),
+			wantImage: jpgImage,
+		},
+		{
+			name: "form txt",
+			fields: fields{
+				SrcExtension: "png",
+				DstExtension: "gif",
+				Decoder:      conversion.ActionPng{},
+				Encoder:      conversion.ActionGif{},
+			},
+			args: args{
+				srcFileName: tFile,
+			},
+			wantErr:   true,
+			wantFile:  "",
+			wantImage: "",
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -59,12 +92,16 @@ func TestConverter_Do(t *testing.T) {
 				Decoder:      tt.fields.Decoder,
 				Encoder:      tt.fields.Encoder,
 			}
-			if err := c.Do(tt.args.srcFileName); (err != nil) != tt.wantErr {
+			var err error
+			if err = c.Do(tt.args.srcFileName); (err != nil) != tt.wantErr {
 				t.Errorf("Converter.Do() error = %v, wantErr %v", err, tt.wantErr)
-			} else if _, err := os.Stat(tt.wantFile); err != nil {
-				t.Errorf("out file dosen't exist, wantFile = %v", tt.wantFile)
-			} else if contentType := http.DetectContentType(dstFileBytes(t, tt.wantFile)); contentType != tt.wantImage {
-				t.Errorf("Converter.Do()'s out file image = %v, wantImage %v", contentType, tt.wantImage)
+			}
+			if err == nil {
+				if _, err := os.Stat(tt.wantFile); err != nil {
+					t.Errorf("out file dosen't exist, wantFile = %v", tt.wantFile)
+				} else if contentType := http.DetectContentType(dstFileBytes(t, tt.wantFile)); contentType != tt.wantImage {
+					t.Errorf("Converter.Do()'s out file image = %v, wantImage %v", contentType, tt.wantImage)
+				}
 			}
 		})
 	}
