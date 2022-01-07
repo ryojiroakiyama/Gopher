@@ -36,6 +36,13 @@ func main() {
 		case idx == 0:
 			continue
 		default:
+			if fi, err := os.Stat(file); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else if fi.IsDir() {
+				fmt.Println("Is a directory")
+				os.Exit(1) //exit status -> 0 and continue
+			}
 			in, err = os.Open(file)
 			if err != nil {
 				fmt.Println(err)
