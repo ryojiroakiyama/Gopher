@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 )
@@ -25,5 +26,25 @@ func cat(in io.Reader, out io.Writer) error {
 }
 
 func main() {
-	cat(os.Stdin, os.Stdout)
+	var in io.Reader
+	var err error
+	args := len(os.Args)
+	for idx, file := range os.Args {
+		switch {
+		case args == 1:
+			in = os.Stdin
+		case idx == 0:
+			continue
+		default:
+			in, err = os.Open(file)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+		if err = cat(in, os.Stdout); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
 }
