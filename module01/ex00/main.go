@@ -25,33 +25,38 @@ func cat(in io.Reader, out io.Writer) error {
 	return nil
 }
 
+func from_file(fileName string) error {
+	if fi, err := os.Stat(fileName); err != nil {
+		return err
+	} else if fi.IsDir() {
+		return fmt.Errorf("Is directory")
+	}
+	file, err := os.Open(fileName)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+	if err = cat(file, os.Stdout); err != nil {
+		return err
+	}
+	return nil
+}
+
 func main() {
-	var in io.Reader
-	var err error
-	args := len(os.Args)
-	for idx, file := range os.Args {
-		switch {
-		case args == 1:
-			in = os.Stdin
-		case idx == 0:
-			continue
-		default:
-			if fi, err := os.Stat(file); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			} else if fi.IsDir() {
-				fmt.Println("Is a directory")
-				os.Exit(1) //exit status -> 0 and continue
-			}
-			in, err = os.Open(file)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+	var status int
+	if len(os.Args) == 1 {
+		if err := cat(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, "cat:", err)
+			status = 1
 		}
-		if err = cat(in, os.Stdout); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+	}
+	for _, file := range os.Args[1:] {
+		if err := from_file(file); err != nil {
+			fmt.Fprintln(os.Stderr, "cat:", err)
+			status = 1
 		}
+	}
+	if status != 0 {
+		os.Exit(status)
 	}
 }
