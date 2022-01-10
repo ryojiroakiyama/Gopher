@@ -50,8 +50,8 @@ func main() {
 			status = 1
 		}
 	}
-	for _, file := range os.Args[1:] {
-		if err := from_file(file); err != nil {
+	for _, fileName := range os.Args[1:] {
+		if err := from_file(fileName); err != nil {
 			fmt.Fprintln(os.Stderr, "cat:", err)
 			status = 1
 		}
