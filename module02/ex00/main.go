@@ -4,31 +4,36 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 )
 
-var sc = bufio.NewScanner(os.Stdin)
-
-func nextLine() (string, error) {
+func nextLine(sc *bufio.Scanner, ch chan<- string) {
 	switch {
 	case sc.Scan():
-		return sc.Text(), nil
+		ch <- sc.Text()
 	case sc.Err() == nil:
-		return "", fmt.Errorf("eof")
+		os.Exit(0)
 	default:
-		fmt.Fprintln(os.Stderr, sc.Err())
-		return "", fmt.Errorf("error")
+		panic(sc.Err())
 	}
 }
 
 func main() {
+	sc := bufio.NewScanner(os.Stdin)
+	ch := make(chan string)
 	for {
 		word := "apple"
 		fmt.Printf("  %v\n", word)
 		fmt.Printf("> ")
-		if get, err := nextLine(); err != nil {
-			break
-		} else if word == get {
-			break
+		go nextLine(sc, ch)
+		select {
+		case get := <-ch:
+			if word == get {
+				return
+			}
+		case <-time.After(5 * time.Second):
+			fmt.Println("timed out")
+			return
 		}
 	}
 }
