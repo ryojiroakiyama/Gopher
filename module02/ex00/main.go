@@ -8,6 +8,13 @@ import (
 	"typing/randomwords"
 )
 
+const (
+	GREEN = "\033[32m"
+	RED   = "\033[31m"
+	CYAN  = "\033[36m"
+	RESET = "\033[0m"
+)
+
 func nextLine(sc *bufio.Scanner, ch chan<- string) {
 	switch {
 	case sc.Scan():
@@ -34,12 +41,12 @@ func main() {
 		select {
 		case get := <-ch:
 			if word == get {
-				fmt.Println("good!")
+				fmt.Printf("%sgood!%s\n", GREEN, RESET)
 			} else {
-				fmt.Println("bad")
+				fmt.Printf("%sno..%s\n", RED, RESET)
 			}
 		case <-time.After(5 * time.Second):
-			fmt.Println("\ntimed out (>_<;)")
+			fmt.Printf("\n%stimed out (>_<;)%s\n", CYAN, RESET)
 			return
 		}
 	}

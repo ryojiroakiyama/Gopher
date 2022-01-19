@@ -2,6 +2,7 @@ package randomwords
 
 import (
 	"bufio"
+	"io"
 	"math/rand"
 	"os"
 	"time"
@@ -27,6 +28,15 @@ func Init() error {
 	}
 	if err := scanner.Err(); err != nil {
 		return err
+	}
+	return nil
+}
+
+func List(out io.Writer) error {
+	for _, word := range words {
+		if _, err := io.WriteString(out, word+"\n"); err != nil {
+			return err
+		}
 	}
 	return nil
 }

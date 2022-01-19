@@ -12,7 +12,7 @@ func TestInit(t *testing.T) {
 	}{
 		{
 			name:    "file exists or not",
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
