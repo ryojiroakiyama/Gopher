@@ -1,5 +1,3 @@
-//Package conversion provides ability to convert file format
-//according to the specified format.
 package conversion_test
 
 import (

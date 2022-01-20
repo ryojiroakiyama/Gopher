@@ -56,6 +56,7 @@ doc:
 imports:
 	goimports -w main.go conversion/*
 
+# go test -run "" -race: in package
 
 #.PHONY: deps
 #deps:

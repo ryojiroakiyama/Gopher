@@ -1,3 +1,5 @@
+//Package randomewords has a list of English words
+//and can move them out.
 package randomwords
 
 import (
@@ -14,6 +16,7 @@ const (
 
 var words []string
 
+//Init make a word list.
 func Init() error {
 	file, err := os.Open(FILENAME)
 	if err != nil {
@@ -32,6 +35,7 @@ func Init() error {
 	return nil
 }
 
+//List put all words in the list to io.Writer.
 func List(out io.Writer) error {
 	for _, word := range words {
 		if _, err := io.WriteString(out, word+"\n"); err != nil {
@@ -41,8 +45,12 @@ func List(out io.Writer) error {
 	return nil
 }
 
-func Out() string {
-	rand.Seed(time.Now().Unix())
-	word := words[rand.Intn(len(words))]
+//Out return a word in the list randomly.
+func Out() (word string) {
+	len := len(words)
+	if 0 < len {
+		rand.Seed(time.Now().Unix())
+		word = words[rand.Intn(len)]
+	}
 	return word
 }
