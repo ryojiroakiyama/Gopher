@@ -39,7 +39,7 @@ fuzz:
 .PHONY: clean
 clean:
 		$(GOCLEAN)
-		rm -f $(COVERAGE)
+		$(RM) $(COVERAGE)
 
 .PHONY: re
 re: clean all

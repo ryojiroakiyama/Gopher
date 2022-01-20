@@ -25,18 +25,24 @@ func cat(in io.Reader, out io.Writer) error {
 	return nil
 }
 
-func from_file(fileName string) error {
-	if fi, err := os.Stat(fileName); err != nil {
-		return err
-	} else if fi.IsDir() {
-		return fmt.Errorf("Is directory")
+func from_arg(arg string) error {
+	var in io.Reader
+	if arg == "-" {
+		in = os.Stdin
+	} else {
+		if fi, err := os.Stat(arg); err != nil {
+			return err
+		} else if fi.IsDir() {
+			return fmt.Errorf("Is directory")
+		}
+		file, err := os.Open(arg)
+		defer file.Close()
+		if err != nil {
+			return err
+		}
+		in = file
 	}
-	file, err := os.Open(fileName)
-	defer file.Close()
-	if err != nil {
-		return err
-	}
-	if err = cat(file, os.Stdout); err != nil {
+	if err := cat(in, os.Stdout); err != nil {
 		return err
 	}
 	return nil
@@ -50,8 +56,8 @@ func main() {
 			status = 1
 		}
 	}
-	for _, fileName := range os.Args[1:] {
-		if err := from_file(fileName); err != nil {
+	for _, arg := range os.Args[1:] {
+		if err := from_arg(arg); err != nil {
 			fmt.Fprintln(os.Stderr, "cat:", err)
 			status = 1
 		}
