@@ -7,9 +7,6 @@ GOGET=$(GOCMD) get
 BINARY_NAME=convert
 BINARY_UNIX=$(BINARY_NAME)_unix
 
-# file name
-COVERAGE=coverage.out
-
 # Make rule
 .PHONY: all
 all: build
@@ -18,28 +15,9 @@ all: build
 build:
 	$(GOBUILD)
 
-.PHONY: test
-test: build
-	go test -v -race ./...
-
-.PHONY: tests
-tests:
-	gotests -w -parallel -all ./...
-
-.PHONY: cover
-cover:
-	$(GOTEST) -v ./... -cover -coverprofile=$(COVERAGE)
-	go tool cover -func=$(COVERAGE)
-	go tool cover -html=$(COVERAGE)
-
-.PHONY: fuzz
-fuzz:
-	go test -fuzz=.
-
 .PHONY: clean
 clean:
-		$(GOCLEAN)
-		rm -f $(COVERAGE)
+	$(GOCLEAN)
 
 .PHONY: re
 re: clean all
@@ -51,21 +29,3 @@ run: build
 .PHONY: doc
 doc:
 	godoc -http=:6060
-
-.PHONY: imports
-imports:
-	goimports -w main.go converter/*
-
-
-#.PHONY: deps
-#deps:
-#		$(GOGET) github.com/markbates/goth
-#		$(GOGET) github.com/markbates/pop
-
-# Cross compilation
-.PHONY: build-linux
-build-linux:
-		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v
-#.PHONY: docker-build
-#docker-build:
-#		docker run --rm -it -v "$(GOPATH)":/go -w /go/src/bitbucket.org/rsohlich/makepost golang:latest go build -o "$(BINARY_UNIX)" -v
