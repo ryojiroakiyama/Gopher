@@ -29,3 +29,5 @@ run: build
 .PHONY: doc
 doc:
 	godoc -http=:6060
+
+#go doc -all converter
