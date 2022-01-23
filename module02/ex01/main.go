@@ -50,7 +50,7 @@ func main() {
 		return
 	}
 	url := os.Args[1]
-	if err := DownloadFile("netpractice.pdf", url); err != nil {
+	if err := DownloadFile("norm.pdf", url); err != nil {
 		panic(err)
 	}
 }
