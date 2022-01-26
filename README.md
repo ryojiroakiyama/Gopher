@@ -11,6 +11,4 @@ options: `-i, -o, -h, --help`
 Implements cat command.  
 execute like: `./cat`, `./cat file1 file2`  
 - ex01  
-Implements test of Module00's ex00  
-do test: `make test`  
-do coverage test: `make cover`
+Implements test of Module00's ex00
