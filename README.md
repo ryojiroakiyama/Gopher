@@ -9,6 +9,6 @@ options: `-i, -o, -h, --help`
 # Module01
 - ex00  
 Implements cat command.  
-execute like: `./cat`, `./cat file1 file2`  
+`./ft_cat`, `./cat file1 - file2`  
 - ex01  
 Implements test of Module00's ex00
