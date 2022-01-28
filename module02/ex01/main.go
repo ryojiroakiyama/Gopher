@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 const (
@@ -55,12 +57,47 @@ func main() {
 	}
 }
 
+func rangeStr(start int, end int) string {
+	return "bytes=" + strconv.Itoa(start) + "-" + strconv.Itoa(end)
+}
+
 func DownloadFile(filepath string, url string) (err error) {
-	resp, err := http.Get(url)
+	resp_h, _ := http.Head(url)
+	maps := resp_h.Header
+	length, _ := strconv.Atoi(maps["Content-Length"][0])
+	start1 := 0
+	end1 := length / 2
+	start2 := end1 + 1
+	end2 := length - 1
+	fmt.Printf("range1:%v-%v, range2:%v-%v, length:%v\n", start1, end1, start2, end2, length)
+
+	range1 := rangeStr(start1, end1)
+	client1 := &http.Client{}
+	req1, _ := http.NewRequest("GET", url, nil)
+	req1.Header.Add("Range", range1)
+	//resp1, err := http.Get(url)
+	resp1, err := client1.Do(req1)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp1.Body.Close()
+
+	range2 := rangeStr(start2, end2)
+	client2 := &http.Client{}
+	req2, _ := http.NewRequest("GET", url, nil)
+	req2.Header.Add("Range", range2)
+	//resp2, err := http.Get(url)
+	resp2, err := client2.Do(req2)
+	if err != nil {
+		return err
+	}
+	defer resp2.Body.Close()
+
+	allbody := &bytes.Buffer{}
+	body_bytes, _ := io.ReadAll(resp1.Body)
+	allbody.Write(body_bytes)
+	body_bytes, _ = io.ReadAll(resp2.Body)
+	allbody.Write(body_bytes)
 
 	out, err := os.Create(filepath)
 	if err != nil {
@@ -71,7 +108,6 @@ func DownloadFile(filepath string, url string) (err error) {
 			err = fmt.Errorf("fail to close: %v", cerr)
 		}
 	}()
-
-	_, err = io.Copy(out, resp.Body)
+	_, err = io.Copy(out, allbody)
 	return err
 }
