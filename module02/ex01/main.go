@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	//"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -66,7 +66,7 @@ func DownloadFile(filepath string, url string) (err error) {
 
 	numDivide := getNumDivide(length)
 	sizeDivide := length / int64(numDivide)
-	allBody := &bytes.Buffer{}
+	var files []string
 	for i := 0; i < numDivide; i++ {
 		minRange := sizeDivide * int64(i)
 		maxRange := sizeDivide * int64(i+1)
@@ -86,14 +86,21 @@ func DownloadFile(filepath string, url string) (err error) {
 			return err
 		}
 		defer resp.Body.Close()
-		bodyBytes, err := io.ReadAll(resp.Body)
+		files = append(files, strconv.Itoa(i))
+		out, err := os.Create(files[i])
 		if err != nil {
 			return err
 		}
-		allBody.Write(bodyBytes)
+		defer func() {
+			if cerr := out.Close(); cerr != nil {
+				err = fmt.Errorf("fail to close: %v", cerr)
+			}
+		}()
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			return err
+		}
 	}
-
-	// write into outfile
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
@@ -103,7 +110,18 @@ func DownloadFile(filepath string, url string) (err error) {
 			err = fmt.Errorf("fail to close: %v", cerr)
 		}
 	}()
-	_, err = io.Copy(out, allBody)
+	for _, fileName := range files {
+		file, err := os.Open(fileName)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		defer os.Remove(fileName)
+		_, err = io.Copy(out, file)
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
