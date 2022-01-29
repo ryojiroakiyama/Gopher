@@ -48,17 +48,22 @@ func main() {
 	}
 }
 
-func rangeStr(start int, end int) string {
-	return "bytes=" + strconv.Itoa(start) + "-" + strconv.Itoa(end)
+func rangeStr(start int64, end int64) string {
+	return "bytes=" + strconv.FormatInt(start, 10) + "-" + strconv.FormatInt(end, 10)
 }
 
 func DownloadFile(filepath string, url string) (err error) {
 
 	// get all length by reponse header
-	resp_h, _ := http.Head(url)
-	maps := resp_h.Header
-	length, _ := strconv.Atoi(maps["Content-Length"][0])
-	start1 := 0
+	resp_h, err := http.Head(url)
+	if err != nil {
+		return err
+	}
+	length := resp_h.ContentLength
+	if length <= 0 {
+		return fmt.Errorf("unknown content length")
+	}
+	var start1 int64
 	end1 := length / 2
 	start2 := end1 + 1
 	end2 := length - 1
