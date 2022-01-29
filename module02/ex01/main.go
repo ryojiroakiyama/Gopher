@@ -11,18 +11,18 @@ import (
 )
 
 const (
-	BLACK          = "\033[30m"
-	RED            = "\033[31m"
-	GREEN          = "\033[32m"
-	YELLOW         = "\033[33m"
-	BLUE           = "\033[34m"
-	MAGENTA        = "\033[35m"
-	CYAN           = "\033[36m"
-	WHITE          = "\033[37m"
-	BOLD           = "\033[1m"
-	UNDERLINE      = "\033[4m"
-	BOLD_UNDERLINE = "\033[1;4m"
-	RESET          = "\033[0m"
+	BLACK     = "\033[30m"
+	RED       = "\033[31m"
+	GREEN     = "\033[32m"
+	YELLOW    = "\033[33m"
+	BLUE      = "\033[34m"
+	MAGENTA   = "\033[35m"
+	CYAN      = "\033[36m"
+	WHITE     = "\033[37m"
+	BOLD      = "\033[1m"
+	UNDERLINE = "\033[4m"
+	RESET     = "\033[0m"
+	ONEDLMAX  = 1000
 )
 
 func printError(err error) {
@@ -48,18 +48,18 @@ func main() {
 	}
 }
 
-func rangeStr(start int64, end int64) string {
+func getRangeValue(start int64, end int64) string {
 	return "bytes=" + strconv.FormatInt(start, 10) + "-" + strconv.FormatInt(end, 10)
 }
 
 func DownloadFile(filepath string, url string) (err error) {
 
 	// get all length by reponse header
-	resp_h, err := http.Head(url)
+	resp, err := http.Head(url)
 	if err != nil {
 		return err
 	}
-	length := resp_h.ContentLength
+	length := resp.ContentLength
 	if length <= 0 {
 		return fmt.Errorf("unknown content length")
 	}
@@ -69,34 +69,35 @@ func DownloadFile(filepath string, url string) (err error) {
 	end2 := length - 1
 	fmt.Printf("range1:%v-%v, range2:%v-%v, length:%v\n", start1, end1, start2, end2, length)
 
-	// get first range response
-	range1 := rangeStr(start1, end1)
-	client1 := &http.Client{}
-	req1, _ := http.NewRequest("GET", url, nil)
-	req1.Header.Add("Range", range1)
-	resp1, err := client1.Do(req1)
-	if err != nil {
-		return err
+	numDivide := getNumDivide(length)
+	sizeDivide := length / int64(numDivide)
+	allBody := &bytes.Buffer{}
+	for i := 0; i < numDivide; i++ {
+		minRange := sizeDivide * int64(i)
+		maxRange := sizeDivide * int64(i+1)
+		if i == numDivide-1 {
+			maxRange += length - maxRange
+		}
+		fmt.Printf("i=%v, min=%v, max=%v\n", i, minRange, maxRange-1)
+		rangeValue := getRangeValue(minRange, maxRange-1)
+		fmt.Println(rangeValue)
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Add("Range", rangeValue)
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		allBody.Write(bodyBytes)
 	}
-	defer resp1.Body.Close()
-
-	// get last range response
-	range2 := rangeStr(start2, end2)
-	client2 := &http.Client{}
-	req2, _ := http.NewRequest("GET", url, nil)
-	req2.Header.Add("Range", range2)
-	resp2, err := client2.Do(req2)
-	if err != nil {
-		return err
-	}
-	defer resp2.Body.Close()
-
-	// bind body
-	allbody := &bytes.Buffer{}
-	body_bytes, _ := io.ReadAll(resp1.Body)
-	allbody.Write(body_bytes)
-	body_bytes, _ = io.ReadAll(resp2.Body)
-	allbody.Write(body_bytes)
 
 	// write into outfile
 	out, err := os.Create(filepath)
@@ -108,6 +109,13 @@ func DownloadFile(filepath string, url string) (err error) {
 			err = fmt.Errorf("fail to close: %v", cerr)
 		}
 	}()
-	_, err = io.Copy(out, allbody)
+	_, err = io.Copy(out, allBody)
 	return err
+}
+
+func getNumDivide(datasize int64) int {
+	if datasize < ONEDLMAX {
+		return 1
+	}
+	return 1 + getNumDivide(datasize/ONEDLMAX)
 }
