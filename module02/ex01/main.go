@@ -63,11 +63,6 @@ func DownloadFile(filepath string, url string) (err error) {
 	if length <= 0 {
 		return fmt.Errorf("unknown content length")
 	}
-	var start1 int64
-	end1 := length / 2
-	start2 := end1 + 1
-	end2 := length - 1
-	fmt.Printf("range1:%v-%v, range2:%v-%v, length:%v\n", start1, end1, start2, end2, length)
 
 	numDivide := getNumDivide(length)
 	sizeDivide := length / int64(numDivide)
@@ -80,7 +75,6 @@ func DownloadFile(filepath string, url string) (err error) {
 		}
 		fmt.Printf("i=%v, min=%v, max=%v\n", i, minRange, maxRange-1)
 		rangeValue := getRangeValue(minRange, maxRange-1)
-		fmt.Println(rangeValue)
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
