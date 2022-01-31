@@ -12,26 +12,20 @@ const (
 	ONEDLMAX = 1000
 )
 
-func DownloadFile(filepath string, url string) (err error) {
+func Do(filepath string, url string) (err error) {
 
-	// get all length by reponse header
-	resp, err := http.Head(url)
+	dataLen, err := DataLength(url)
 	if err != nil {
 		return err
 	}
-	length := resp.ContentLength
-	if length <= 0 {
-		return fmt.Errorf("unknown content length")
-	}
-
-	numDivide := getNumDivide(length)
-	sizeDivide := length / int64(numDivide)
+	numDivide := NumDivideRange(dataLen)
+	sizeDivide := dataLen / int64(numDivide)
 	var files []string
 	for i := 0; i < numDivide; i++ {
 		minRange := sizeDivide * int64(i)
 		maxRange := sizeDivide * int64(i+1)
 		if i == numDivide-1 {
-			maxRange += length - maxRange
+			maxRange += dataLen - maxRange
 		}
 		fmt.Printf("i=%v, min=%v, max=%v\n", i, minRange, maxRange-1)
 		rangeValue := getRangeValue(minRange, maxRange-1)

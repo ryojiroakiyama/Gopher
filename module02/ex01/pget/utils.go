@@ -1,6 +1,7 @@
 package pget
 
 import (
+	"http"
 	"strconv"
 )
 
@@ -8,9 +9,21 @@ func getRangeValue(start int64, end int64) string {
 	return "bytes=" + strconv.FormatInt(start, 10) + "-" + strconv.FormatInt(end, 10)
 }
 
-func getNumDivide(datasize int64) int {
+func NumDivideRange(datasize int64) int {
 	if datasize < ONEDLMAX {
 		return 1
 	}
-	return 1 + getNumDivide(datasize/ONEDLMAX)
+	return 1 + NumDivideRange(datasize/ONEDLMAX)
+}
+
+func DataLength(url string) (int64, error) {
+	resp, err := http.Head(url)
+	if err != nil {
+		return 0, err
+	}
+	length := resp.ContentLength
+	if length <= 0 {
+		return 0, fmt.Errorf("unknown content length")
+	}
+	return length, nil
 }

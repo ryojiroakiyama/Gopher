@@ -39,7 +39,7 @@ func main() {
 		return
 	}
 	url := os.Args[1]
-	if err := pget.DownloadFile("norm.pdf", url); err != nil {
+	if err := pget.Do("norm.pdf", url); err != nil {
 		panic(err)
 	}
 }
