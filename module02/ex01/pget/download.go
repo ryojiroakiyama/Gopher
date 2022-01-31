@@ -2,6 +2,7 @@ package pget
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 )
@@ -11,23 +12,26 @@ const (
 )
 
 func Do(filepath string, url string) (err error) {
-	datasize, err := DataLength(url)
+	sizeTotal, err := DataLength(url)
 	if err != nil {
 		return err
 	}
-	numDivide := NumDivideRange(datasize)
-	sizeDivide := datasize / int64(numDivide)
-	tmpfiles := make([]tmpfile, numDivide)
+	numDivide := NumDivideRange(sizeTotal)
+	sizeDivide := sizeTotal / int64(numDivide)
+	tmpFileNames := make([]string, numDivide)
 	defer func() {
-		for _, t := range tmpfiles {
-			t.remove()
+		for _, t := range tmpFileNames {
+			if t != "" {
+				fmt.Println("tmpfile:", t)
+				os.Remove(t)
+			}
 		}
 	}()
 	for i := 0; i < numDivide; i++ {
 		minRange := sizeDivide * int64(i)
 		maxRange := sizeDivide * int64(i+1)
 		if i == numDivide-1 {
-			maxRange += datasize - maxRange
+			maxRange += sizeTotal - maxRange
 		}
 		fmt.Printf("i=%v, min=%v, max=%v\n", i, minRange, maxRange-1)
 		client := &http.Client{}
@@ -41,17 +45,31 @@ func Do(filepath string, url string) (err error) {
 			return err
 		}
 		defer resp.Body.Close()
-		if err = toFile("", &tmpfiles[i], resp.Body); err != nil {
-			return err
-		}
-	}
-	var dfile dstfile
-	for _, tmpfile := range tmpfiles {
-		file, err := os.Open(tmpfile.name)
+		tmpfile, err := os.CreateTemp("", "")
 		if err != nil {
 			return err
 		}
-		if err = toFile(filepath, &dfile, file); err != nil {
+		tmpFileNames[i] = tmpfile.Name()
+		_, err = io.Copy(tmpfile, resp.Body)
+		if err != nil {
+			return err
+		}
+		if err = tmpfile.Close(); err != nil {
+			return err
+		}
+	}
+	dstFile, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+	for _, srcFileName := range tmpFileNames {
+		srcfile, err := os.Open(srcFileName)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(dstFile, srcfile)
+		if err != nil {
 			return err
 		}
 	}

@@ -2,7 +2,6 @@ package pget
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 )
@@ -28,21 +27,4 @@ func DataLength(url string) (int64, error) {
 		return 0, fmt.Errorf("unknown content length")
 	}
 	return length, nil
-}
-
-func toFile(filename string, file openfile, src io.Reader) (err error) {
-	dst, err := file.open(filename)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if cerr := dst.Close(); cerr != nil {
-			err = fmt.Errorf("fail to close: %v", cerr)
-		}
-	}()
-	_, err = io.Copy(dst, src)
-	if err != nil {
-		return err
-	}
-	return nil
 }
