@@ -30,8 +30,8 @@ func DataLength(url string) (int64, error) {
 	return length, nil
 }
 
-func toFile(filepath string, file openfile, src io.Reader) (err error) {
-	dst, err := file.open(filepath)
+func toFile(filename string, file openfile, src io.Reader) (err error) {
+	dst, err := file.open(filename)
 	if err != nil {
 		return err
 	}

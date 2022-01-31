@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 const (
@@ -16,14 +15,14 @@ func Do(filepath string, url string) (err error) {
 	if err != nil {
 		return err
 	}
-	var tmpfiles []tmpfile
-	defer func() {
-		for _, tmpfile := range tmpfiles {
-			tmpfile.remove()
-		}
-	}()
 	numDivide := NumDivideRange(datasize)
 	sizeDivide := datasize / int64(numDivide)
+	tmpfiles := make([]tmpfile, numDivide)
+	defer func() {
+		for _, t := range tmpfiles {
+			t.remove()
+		}
+	}()
 	for i := 0; i < numDivide; i++ {
 		minRange := sizeDivide * int64(i)
 		maxRange := sizeDivide * int64(i+1)
@@ -42,8 +41,7 @@ func Do(filepath string, url string) (err error) {
 			return err
 		}
 		defer resp.Body.Close()
-		tmpfiles = append(tmpfiles, tmpfile{})
-		if err = toFile(strconv.Itoa(i), &tmpfiles[i], resp.Body); err != nil {
+		if err = toFile("", &tmpfiles[i], resp.Body); err != nil {
 			return err
 		}
 	}
