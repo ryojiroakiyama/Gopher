@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -31,8 +30,8 @@ func DataLength(url string) (int64, error) {
 	return length, nil
 }
 
-func toFile(filepath string, src io.Reader) (err error) {
-	dst, err := os.Create(filepath)
+func toFile(filepath string, file openfile, src io.Reader) (err error) {
+	dst, err := file.open(filepath)
 	if err != nil {
 		return err
 	}

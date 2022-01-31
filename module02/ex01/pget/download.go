@@ -2,7 +2,6 @@ package pget
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,11 +12,16 @@ const (
 )
 
 func Do(filepath string, url string) (err error) {
-
 	datasize, err := DataLength(url)
 	if err != nil {
 		return err
 	}
+	var tmpfiles []tmpfile
+	defer func() {
+		for _, tmpfile := range tmpfiles {
+			tmpfile.remove()
+		}
+	}()
 	numDivide := NumDivideRange(datasize)
 	sizeDivide := datasize / int64(numDivide)
 	for i := 0; i < numDivide; i++ {
@@ -38,29 +42,18 @@ func Do(filepath string, url string) (err error) {
 			return err
 		}
 		defer resp.Body.Close()
-		if err = toFile(strconv.Itoa(i), resp.Body); err != nil {
+		tmpfiles = append(tmpfiles, tmpfile{})
+		if err = toFile(strconv.Itoa(i), &tmpfiles[i], resp.Body); err != nil {
 			return err
 		}
 	}
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if cerr := out.Close(); cerr != nil {
-			err = fmt.Errorf("fail to close: %v", cerr)
-		}
-	}()
-	for i := 0; i < numDivide; i++ {
-		srcFileName := strconv.Itoa(i)
-		file, err := os.Open(srcFileName)
+	var dfile dstfile
+	for _, tmpfile := range tmpfiles {
+		file, err := os.Open(tmpfile.name)
 		if err != nil {
 			return err
 		}
-		defer file.Close()
-		defer os.Remove(srcFileName)
-		_, err = io.Copy(out, file)
-		if err != nil {
+		if err = toFile(filepath, &dfile, file); err != nil {
 			return err
 		}
 	}

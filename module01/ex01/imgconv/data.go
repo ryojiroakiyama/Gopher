@@ -55,22 +55,6 @@ type Converter struct {
 	Encoder      Action
 }
 
-//func (c Converter) GetSrcExt() string {
-//	return c.SrcExtension
-//}
-
-//func (c Converter) GetDstExt() string {
-//	return c.DstExtension
-//}
-
-//func (c Converter) GetEncoder() Action {
-//	return c.Encoder
-//}
-
-//func (c Converter) GetDecoder() Action {
-//	return c.Decoder
-//}
-
 type Action interface {
 	decode(r io.Reader) (image.Image, error)
 	encode(w io.Writer, m image.Image) error
