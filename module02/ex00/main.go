@@ -29,6 +29,7 @@ func nextLine(sc *bufio.Scanner, ch chan<- string) {
 func main() {
 	sc := bufio.NewScanner(os.Stdin)
 	ch := make(chan string)
+	defer close(ch)
 	if err := randomwords.Init(); err != nil {
 		fmt.Fprintln(os.Stderr, "init:", err)
 		return
