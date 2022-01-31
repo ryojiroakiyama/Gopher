@@ -1,11 +1,14 @@
 package pget
 
 import (
-	"http"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"strconv"
 )
 
-func getRangeValue(start int64, end int64) string {
+func RangeValue(start int64, end int64) string {
 	return "bytes=" + strconv.FormatInt(start, 10) + "-" + strconv.FormatInt(end, 10)
 }
 
@@ -26,4 +29,21 @@ func DataLength(url string) (int64, error) {
 		return 0, fmt.Errorf("unknown content length")
 	}
 	return length, nil
+}
+
+func toFile(filepath string, src io.Reader) (err error) {
+	dst, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := dst.Close(); cerr != nil {
+			err = fmt.Errorf("fail to close: %v", cerr)
+		}
+	}()
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return err
+	}
+	return nil
 }
