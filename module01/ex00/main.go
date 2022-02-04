@@ -1,10 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"os"
 )
+
+func putError(out io.Writer, message string) {
+	if _, err := out.Write([]byte("ft_cat: " + message + "\n")); err != nil {
+		os.Exit(1)
+	}
+}
 
 func cat(in io.Reader, out io.Writer) error {
 	buf := make([]byte, 101)
@@ -25,40 +30,40 @@ func cat(in io.Reader, out io.Writer) error {
 	return nil
 }
 
-func from_arg(arg string) error {
+func from_arg(arg string) string {
 	var in io.Reader
 	if arg == "-" {
 		in = os.Stdin
 	} else {
 		if fi, err := os.Stat(arg); err != nil {
-			return err
+			return err.Error()
 		} else if fi.IsDir() {
-			return fmt.Errorf("Is directory")
+			return "Is directory"
 		}
 		file, err := os.Open(arg)
 		defer file.Close()
 		if err != nil {
-			return err
+			return err.Error()
 		}
 		in = file
 	}
 	if err := cat(in, os.Stdout); err != nil {
-		return err
+		return err.Error()
 	}
-	return nil
+	return ""
 }
 
 func main() {
 	var status int
 	if len(os.Args) == 1 {
 		if err := cat(os.Stdin, os.Stdout); err != nil {
-			fmt.Fprintln(os.Stderr, "cat:", err)
+			putError(os.Stderr, err.Error())
 			status = 1
 		}
 	}
 	for _, arg := range os.Args[1:] {
-		if err := from_arg(arg); err != nil {
-			fmt.Fprintln(os.Stderr, "cat:", err)
+		if err_message := from_arg(arg); err_message != "" {
+			putError(os.Stderr, err_message)
 			status = 1
 		}
 	}
