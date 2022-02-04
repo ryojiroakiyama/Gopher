@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"os"
+	"strings"
 )
 
 func putError(out io.Writer, message string) {
@@ -35,15 +36,15 @@ func from_arg(arg string) string {
 	if arg == "-" {
 		in = os.Stdin
 	} else {
-		if fi, err := os.Stat(arg); err != nil {
-			return err.Error()
-		} else if fi.IsDir() {
-			return "Is directory"
-		}
 		file, err := os.Open(arg)
 		defer file.Close()
 		if err != nil {
-			return err.Error()
+			return strings.TrimPrefix(err.Error(), "open")
+		}
+		if fileInfo, err := os.Stat(arg); err != nil {
+			return strings.TrimPrefix(err.Error(), "stat")
+		} else if fileInfo.IsDir() {
+			return "Is directory"
 		}
 		in = file
 	}
