@@ -14,20 +14,23 @@ const (
 	ONEDLMAX = 1000
 )
 
+type ctxKeyUrl struct{}
+
 var wg sync.WaitGroup
 
 func Do(filepath string, url string) (err error) {
-	sizeTotal, err := DataLength(url)
+	sizeSum, err := DataLength(url)
 	if err != nil {
 		return err
 	}
-	numDivide := NumDivideRange(sizeTotal)
-	sizeDivide := sizeTotal / int64(numDivide)
+	numDivide := NumDivideRange(sizeSum)
+	sizeDivide := sizeSum / int64(numDivide)
 	fileNames := make([]chan io.Reader, numDivide)
 	ctx, cancel := context.WithCancel(context.Background())
+	ctx = context.WithValue(ctx, ctxKeyUrl{}, url)
 	for i := 0; i < numDivide; i++ {
 		wg.Add(1)
-		fileNames[i] = download(ctx, i, numDivide, sizeDivide, sizeTotal, url)
+		fileNames[i] = download(ctx, i, numDivide, sizeDivide, sizeSum)
 	}
 	dstFile, err := os.Create(filepath)
 	if err != nil {
@@ -50,17 +53,21 @@ func Do(filepath string, url string) (err error) {
 	return err
 }
 
-func download(ctx context.Context, index int, numDivide int, sizeDivide int64, sizeTotal int64, url string) chan io.Reader {
+func download(ctx context.Context, index int, numDivide int, sizeDivide int64, sizeSum int64) chan io.Reader {
 	outFileName := make(chan io.Reader)
 	go func() {
 		defer wg.Done()
 		minRange := sizeDivide * int64(index)
 		maxRange := sizeDivide * int64(index+1)
 		if index == numDivide-1 {
-			maxRange += sizeTotal - maxRange
+			maxRange += sizeSum - maxRange
 		}
 		fmt.Printf("index=%v, min=%v, max=%v\n", index, minRange, maxRange-1)
 		client := &http.Client{}
+		url, ok := ctx.Value(ctxKeyUrl{}).(string)
+		if !ok {
+			log.Fatal("no")
+		}
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			log.Fatal(err)
