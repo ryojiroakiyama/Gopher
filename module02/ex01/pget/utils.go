@@ -28,3 +28,12 @@ func DataLength(url string) (int64, error) {
 	}
 	return length, nil
 }
+
+func DownloadRange(index int, numDiv int, sizeDiv int64, sizeSum int64) (int64, int64) {
+	minRange := sizeDiv * int64(index)
+	maxRange := sizeDiv * int64(index+1)
+	if index == numDiv-1 {
+		maxRange += sizeSum - maxRange
+	}
+	return minRange, maxRange
+}
