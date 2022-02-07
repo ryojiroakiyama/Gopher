@@ -6,11 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 )
 
 const (
 	ONEDLMAX = 1000
 )
+
+var wg sync.WaitGroup
 
 func Do(filepath string, url string) (err error) {
 	sizeTotal, err := DataLength(url)
@@ -20,29 +23,25 @@ func Do(filepath string, url string) (err error) {
 	numDivide := NumDivideRange(sizeTotal)
 	sizeDivide := sizeTotal / int64(numDivide)
 	chStr := make([]chan string, numDivide)
-	chDone := make([]chan bool, numDivide)
 	tmpFileNames := make([]string, numDivide)
 	defer func() {
 		for _, t := range tmpFileNames {
 			if t != "" {
-				fmt.Println("tmpfile:", t)
+				fmt.Println("\ntmpfile:", t)
 				os.Remove(t)
 			}
 		}
 	}()
 	for i := 0; i < numDivide; i++ {
 		chStr[i] = make(chan string)
-		chDone[i] = make(chan bool)
-		go download(i, numDivide, sizeDivide, sizeTotal, url, chStr[i], chDone[i])
+		wg.Add(1)
+		go download(i, numDivide, sizeDivide, sizeTotal, url, chStr[i])
 	}
 	for i, ch := range chStr {
 		tmpFileNames[i] = <-ch
 		close(ch)
 	}
-	for _, ch := range chDone {
-		_ = <-ch
-		close(ch)
-	}
+	wg.Wait()
 	dstFile, err := os.Create(filepath)
 	if err != nil {
 		return err
@@ -61,7 +60,8 @@ func Do(filepath string, url string) (err error) {
 	return err
 }
 
-func download(index int, numDivide int, sizeDivide int64, sizeTotal int64, url string, chStr chan<- string, chDone chan<- bool) {
+func download(index int, numDivide int, sizeDivide int64, sizeTotal int64, url string, chStr chan<- string) {
+	defer wg.Done()
 	minRange := sizeDivide * int64(index)
 	maxRange := sizeDivide * int64(index+1)
 	if index == numDivide-1 {
@@ -83,6 +83,7 @@ func download(index int, numDivide int, sizeDivide int64, sizeTotal int64, url s
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Printf("%v ", tmpfile.Name())
 	chStr <- tmpfile.Name()
 	_, err = io.Copy(tmpfile, resp.Body)
 	if err != nil {
@@ -91,6 +92,4 @@ func download(index int, numDivide int, sizeDivide int64, sizeTotal int64, url s
 	if err = tmpfile.Close(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%v ", tmpfile.Name())
-	chDone <- true
 }
