@@ -23,7 +23,7 @@ func Do(filepath string, url string) (err error) {
 	}
 	numDivide := NumDivideRange(sizeTotal)
 	sizeDivide := sizeTotal / int64(numDivide)
-	fileNames := make([]chan string, numDivide)
+	fileNames := make([]chan io.Reader, numDivide)
 	ctx, cancel := context.WithCancel(context.Background())
 	for i := 0; i < numDivide; i++ {
 		wg.Add(1)
@@ -35,11 +35,12 @@ func Do(filepath string, url string) (err error) {
 	}
 	defer dstFile.Close()
 	for _, fileName := range fileNames {
-		srcfile, err := os.Open(<-fileName)
-		if err != nil {
-			return err
+		get := <-fileName
+		if get == nil {
+			os.Remove(dstFile.Name())
+			return fmt.Errorf("error")
 		}
-		_, err = io.Copy(dstFile, srcfile)
+		_, err = io.Copy(dstFile, <-fileName)
 		if err != nil {
 			return err
 		}
@@ -49,8 +50,8 @@ func Do(filepath string, url string) (err error) {
 	return err
 }
 
-func download(ctx context.Context, index int, numDivide int, sizeDivide int64, sizeTotal int64, url string) chan string {
-	outFileName := make(chan string)
+func download(ctx context.Context, index int, numDivide int, sizeDivide int64, sizeTotal int64, url string) chan io.Reader {
+	outFileName := make(chan io.Reader)
 	go func() {
 		defer wg.Done()
 		minRange := sizeDivide * int64(index)
@@ -70,28 +71,12 @@ func download(ctx context.Context, index int, numDivide int, sizeDivide int64, s
 			log.Fatal(err)
 		}
 		defer resp.Body.Close()
-		tmpfile, err := os.CreateTemp("", "")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer func() {
-			fmt.Println("\nrm %v", tmpfile.Name())
-			os.Remove(tmpfile.Name())
-		}()
-		fmt.Printf("%v ", tmpfile.Name())
-		_, err = io.Copy(tmpfile, resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err = tmpfile.Close(); err != nil {
-			log.Fatal(err)
-		}
 	LOOP:
 		for {
 			select {
 			case <-ctx.Done():
 				break LOOP
-			case outFileName <- tmpfile.Name():
+			case outFileName <- resp.Body:
 			}
 		}
 		close(outFileName)
