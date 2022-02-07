@@ -37,18 +37,15 @@ func Do(filepath string, url string) (err error) {
 		wg.Add(1)
 		go download(i, numDivide, sizeDivide, sizeTotal, url, chStr[i])
 	}
-	for i, ch := range chStr {
-		tmpFileNames[i] = <-ch
-		close(ch)
-	}
-	wg.Wait()
+	fmt.Println("\n---------------------")
 	dstFile, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
 	defer dstFile.Close()
-	for _, srcFileName := range tmpFileNames {
-		srcfile, err := os.Open(srcFileName)
+	for _, ch := range chStr {
+		name := <-ch
+		srcfile, err := os.Open(name)
 		if err != nil {
 			return err
 		}
@@ -57,6 +54,7 @@ func Do(filepath string, url string) (err error) {
 			return err
 		}
 	}
+	wg.Wait()
 	return err
 }
 
@@ -84,7 +82,6 @@ func download(index int, numDivide int, sizeDivide int64, sizeTotal int64, url s
 		log.Fatal(err)
 	}
 	fmt.Printf("%v ", tmpfile.Name())
-	chStr <- tmpfile.Name()
 	_, err = io.Copy(tmpfile, resp.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -92,4 +89,5 @@ func download(index int, numDivide int, sizeDivide int64, sizeTotal int64, url s
 	if err = tmpfile.Close(); err != nil {
 		log.Fatal(err)
 	}
+	chStr <- tmpfile.Name()
 }
