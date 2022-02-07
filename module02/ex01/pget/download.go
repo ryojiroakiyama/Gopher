@@ -23,20 +23,19 @@ func Do(filepath string, url string) (err error) {
 	}
 	numDivide := NumDivideRange(sizeTotal)
 	sizeDivide := sizeTotal / int64(numDivide)
-	ch := make([]chan string, numDivide)
+	fileNames := make([]chan string, numDivide)
 	ctx, cancel := context.WithCancel(context.Background())
 	for i := 0; i < numDivide; i++ {
 		wg.Add(1)
-		ch[i] = download(ctx, i, numDivide, sizeDivide, sizeTotal, url)
+		fileNames[i] = download(ctx, i, numDivide, sizeDivide, sizeTotal, url)
 	}
 	dstFile, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
 	defer dstFile.Close()
-	for _, ch := range ch {
-		name := <-ch
-		srcfile, err := os.Open(name)
+	for _, fileName := range fileNames {
+		srcfile, err := os.Open(<-fileName)
 		if err != nil {
 			return err
 		}
@@ -51,7 +50,7 @@ func Do(filepath string, url string) (err error) {
 }
 
 func download(ctx context.Context, index int, numDivide int, sizeDivide int64, sizeTotal int64, url string) chan string {
-	fileCh := make(chan string)
+	outFileName := make(chan string)
 	go func() {
 		defer wg.Done()
 		minRange := sizeDivide * int64(index)
@@ -92,10 +91,10 @@ func download(ctx context.Context, index int, numDivide int, sizeDivide int64, s
 			select {
 			case <-ctx.Done():
 				break LOOP
-			case fileCh <- tmpfile.Name():
+			case outFileName <- tmpfile.Name():
 			}
 		}
-		close(fileCh)
+		close(outFileName)
 	}()
-	return fileCh
+	return outFileName
 }
