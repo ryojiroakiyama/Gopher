@@ -43,7 +43,7 @@ func Do(filepath string, url string) (err error) {
 			os.Remove(dstFile.Name())
 			return fmt.Errorf("error")
 		}
-		_, err = io.Copy(dstFile, <-fileName)
+		_, err = io.Copy(dstFile, get)
 		if err != nil {
 			return err
 		}

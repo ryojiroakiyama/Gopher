@@ -3,86 +3,98 @@ package pget
 import (
 	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"io"
-	"log"
 	"net/http"
 	"os"
-	"sync"
 )
 
 const (
 	ONEDLMAX = 1000
 )
 
-type ctxKeyUrl struct{}
+type divFile string
 
-var wg sync.WaitGroup
+//type ctxKeyUrl struct{}
 
 func Do(filepath string, url string) (err error) {
-	sizeSum, err := DataLength(url)
-	if err != nil {
-		return err
-	}
-	numDiv := NumDivideRange(sizeSum)
-	sizeDiv := sizeSum / int64(numDiv)
-	ctx, cancel := context.WithCancel(context.Background())
-	ctx = context.WithValue(ctx, ctxKeyUrl{}, url)
-	readers := make([]chan io.Reader, numDiv)
-	for i := 0; i < numDiv; i++ {
-		wg.Add(1)
-		readers[i] = download(ctx, i, numDiv, sizeDiv, sizeSum)
-	}
-	dstFile, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer dstFile.Close()
-	for _, fileName := range readers {
-		get := <-fileName
-		if get == nil {
-			os.Remove(dstFile.Name())
-			return fmt.Errorf("error")
+	download := func(ctx context.Context, filepath string, url string) ([]divFile, error) {
+		eg, ctx := errgroup.WithContext(ctx)
+		sizeSum, err := DataLength(url)
+		if err != nil {
+			return nil, err
 		}
-		_, err = io.Copy(dstFile, <-fileName)
+		numDiv := NumDivideRange(sizeSum)
+		sizeDiv := sizeSum / int64(numDiv)
+		//ctx = context.WithValue(ctx, ctxKeyUrl{}, url)
+		divfiles := make([]divFile, numDiv)
+		for i := 0; i < numDiv; i++ {
+			i := i
+			eg.Go(func() (err error) {
+				minRange, maxRange := DownloadRange(i, numDiv, sizeDiv, sizeSum)
+				client := &http.Client{}
+				req, err := http.NewRequest("GET", url, nil)
+				if err != nil {
+					return err
+				}
+				req.Header.Add("Range", RangeValue(minRange, maxRange-1))
+				resp, err := client.Do(req)
+				if err != nil {
+					return err
+				}
+				defer resp.Body.Close()
+				tmpfile, err := os.CreateTemp("", "")
+				if err != nil {
+					return err
+				}
+				defer func() {
+					if cerr := tmpfile.Close(); cerr != nil {
+						err = fmt.Errorf("fail to close: %v", cerr)
+					}
+				}()
+				divfiles[i] = divFile(tmpfile.Name())
+				fmt.Println("create:", tmpfile.Name())
+				_, err = io.Copy(tmpfile, resp.Body)
+				if err != nil {
+					return err
+				}
+				return nil
+			})
+			if err = eg.Wait(); err != nil {
+				return nil, err
+			}
+		}
+		return divfiles, nil
+	}
+
+	divfiles, err := download(context.Background(), filepath, url)
+	defer func() {
+		for _, d := range divfiles {
+			if d != "" {
+				fmt.Println("rm:", d)
+				os.Remove(string(d))
+			}
+		}
+	}()
+	dstfile, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := dstfile.Close(); cerr != nil {
+			err = fmt.Errorf("fail to close: %v", cerr)
+		}
+	}()
+	for _, srcfileName := range divfiles {
+		srcfile, err := os.Open(string(srcfileName))
+		if err != nil {
+			os.Remove(dstfile.Name())
+			return err
+		}
+		_, err = io.Copy(dstfile, srcfile)
 		if err != nil {
 			return err
 		}
 	}
-	cancel()
-	wg.Wait()
 	return err
-}
-
-func download(ctx context.Context, index int, numDiv int, sizeDiv int64, sizeSum int64) chan io.Reader {
-	outFileName := make(chan io.Reader)
-	go func() {
-		defer wg.Done()
-		minRange, maxRange := DownloadRange(index, numDiv, sizeDiv, sizeSum)
-		//fmt.Printf("index=%v, min=%v, max=%v\n", index, minRange, maxRange-1)
-		client := &http.Client{}
-		url, ok := ctx.Value(ctxKeyUrl{}).(string)
-		if !ok {
-			log.Fatal("no")
-		}
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-		req.Header.Add("Range", RangeValue(minRange, maxRange-1))
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer resp.Body.Close()
-	LOOP:
-		for {
-			select {
-			case <-ctx.Done():
-				break LOOP
-			case outFileName <- resp.Body:
-			}
-		}
-		close(outFileName)
-	}()
-	return outFileName
 }
