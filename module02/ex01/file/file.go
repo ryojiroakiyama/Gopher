@@ -1,4 +1,4 @@
-package pget
+package file
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func toTmpFile(src io.Reader) (fileName string, err error) {
+func ToTmpFile(src io.Reader) (fileName string, err error) {
 	tmpfile, err := os.CreateTemp("", "")
 	if err != nil {
 		return "", fmt.Errorf("failt to create tmpfile: %v", err)
@@ -25,7 +25,7 @@ func toTmpFile(src io.Reader) (fileName string, err error) {
 	return
 }
 
-func bindFiles(srcNames []string, dstName string) (err error) {
+func BindFiles(srcNames []string, dstName string) (err error) {
 	dstfile, err := os.Create(dstName)
 	if err != nil {
 		return fmt.Errorf("failt to create: %v", err)

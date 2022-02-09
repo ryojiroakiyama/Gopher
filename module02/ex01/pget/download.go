@@ -2,6 +2,7 @@ package pget
 
 import (
 	"context"
+	"download/file"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,7 +30,7 @@ func divDownload(url string, minRange int64, maxRange int64) (string, error) {
 		return "", err
 	}
 	defer content.Close()
-	return toTmpFile(content)
+	return file.ToTmpFile(content)
 }
 
 func download(ctx context.Context, url string) ([]string, error) {

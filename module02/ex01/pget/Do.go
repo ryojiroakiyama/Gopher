@@ -2,6 +2,7 @@ package pget
 
 import (
 	"context"
+	"download/file"
 	"fmt"
 	"os"
 	"strings"
@@ -24,7 +25,7 @@ func Do(url string) error {
 			}
 		}
 	}()
-	if err := bindFiles(divfiles, url[strings.LastIndex(url, "/")+1:]); err != nil {
+	if err := file.BindFiles(divfiles, url[strings.LastIndex(url, "/")+1:]); err != nil {
 		return fmt.Errorf("Do: %v", err)
 	}
 	return nil
