@@ -9,7 +9,7 @@ import (
 func toTmpFile(src io.Reader) (fileName string, err error) {
 	tmpfile, err := os.CreateTemp("", "")
 	if err != nil {
-		return "", fmt.Errorf("failt to create: %v", err)
+		return "", fmt.Errorf("failt to create tmpfile: %v", err)
 	}
 	fileName = tmpfile.Name()
 	fmt.Println("create:", fileName)
@@ -28,7 +28,7 @@ func toTmpFile(src io.Reader) (fileName string, err error) {
 func bindFiles(srcNames []string, dstName string) (err error) {
 	dstfile, err := os.Create(dstName)
 	if err != nil {
-		return err
+		return fmt.Errorf("failt to create: %v", err)
 	}
 	defer func() {
 		if cerr := dstfile.Close(); cerr != nil {
@@ -41,12 +41,12 @@ func bindFiles(srcNames []string, dstName string) (err error) {
 	for _, srcName := range srcNames {
 		srcfile, err := os.Open(srcName)
 		if err != nil {
-			return err
+			return fmt.Errorf("failt to open: %v", err)
 		}
 		defer srcfile.Close()
 		_, err = io.Copy(dstfile, srcfile)
 		if err != nil {
-			return err
+			return fmt.Errorf("fail to copy: %v", err)
 		}
 	}
 	return err

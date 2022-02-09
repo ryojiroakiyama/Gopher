@@ -3,9 +3,10 @@ package pget
 import (
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"io"
 	"net/http"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func rangeRequest(url string, minRange int64, maxRange int64) (io.ReadCloser, error) {
@@ -23,32 +24,32 @@ func rangeRequest(url string, minRange int64, maxRange int64) (io.ReadCloser, er
 }
 
 func divDownload(url string, minRange int64, maxRange int64) (string, error) {
-	body, err := rangeRequest(url, minRange, maxRange)
+	content, err := rangeRequest(url, minRange, maxRange)
 	if err != nil {
 		return "", err
 	}
-	defer body.Close()
-	return toTmpFile(body)
+	defer content.Close()
+	return toTmpFile(content)
 }
 
 func download(ctx context.Context, url string) ([]string, error) {
 	eg, ctx := errgroup.WithContext(ctx)
-	sizeSum, err := DataLength(url)
+	sumSize, err := DataLength(url)
 	if err != nil {
 		return nil, err
 	}
-	numDiv := NumDivideRange(sizeSum)
-	sizeDiv := sizeSum / int64(numDiv)
-	divfiles := make([]string, numDiv)
-	for i := 0; i < numDiv; i++ {
+	divNum := NumDivideRange(sumSize)
+	divSize := sumSize / int64(divNum)
+	downloadedFiles := make([]string, divNum)
+	for i := 0; i < divNum; i++ {
 		i := i
 		err := err
 		eg.Go(func() error {
-			minRange, maxRange := DownloadRange(i, numDiv, sizeDiv, sizeSum)
+			minRange, maxRange := downloadRange(i, divNum, divSize, sumSize)
 			select {
 			case <-ctx.Done():
 			default:
-				divfiles[i], err = divDownload(url, minRange, maxRange)
+				downloadedFiles[i], err = divDownload(url, minRange, maxRange)
 			}
 			return err
 		})
@@ -56,5 +57,5 @@ func download(ctx context.Context, url string) ([]string, error) {
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
-	return divfiles, nil
+	return downloadedFiles, nil
 }

@@ -14,7 +14,7 @@ const (
 func Do(url string) error {
 	divfiles, err := download(context.Background(), url)
 	if err != nil {
-		return err
+		return fmt.Errorf("Do: %v", err)
 	}
 	defer func() {
 		for _, d := range divfiles {
@@ -25,7 +25,7 @@ func Do(url string) error {
 		}
 	}()
 	if err := bindFiles(divfiles, url[strings.LastIndex(url, "/")+1:]); err != nil {
-		return err
+		return fmt.Errorf("Do: %v", err)
 	}
 	return nil
 }

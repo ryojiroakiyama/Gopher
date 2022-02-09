@@ -61,7 +61,7 @@ func download(ctx context.Context, index int, numDiv int, sizeDiv int64, sizeSum
 	outFileName := make(chan io.Reader)
 	go func() {
 		defer wg.Done()
-		minRange, maxRange := DownloadRange(index, numDiv, sizeDiv, sizeSum)
+		minRange, maxRange := downloadRange(index, numDiv, sizeDiv, sizeSum)
 		client := &http.Client{}
 		url, ok := ctx.Value(ctxKeyUrl{}).(string)
 		if !ok {
