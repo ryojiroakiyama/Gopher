@@ -3,10 +3,11 @@ package pget
 import (
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"io"
 	"net/http"
 	"os"
+
+	"golang.org/x/sync/errgroup"
 )
 
 const (
