@@ -11,10 +11,10 @@ func RangeValue(start int64, end int64) string {
 }
 
 func NumDivideRange(datasize int64) int {
-	if datasize < ONEDLMAX {
+	if datasize < DivDownLoadMax {
 		return 1
 	}
-	return 1 + NumDivideRange(datasize/ONEDLMAX)
+	return 1 + NumDivideRange(datasize/DivDownLoadMax)
 }
 
 func DataLength(url string) (int64, error) {

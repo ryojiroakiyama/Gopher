@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ONEDLMAX = 1000
+	DivDownLoadMax = 1000
 )
 
 type ctxKeyUrl struct{}
