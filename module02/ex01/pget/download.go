@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -13,7 +14,7 @@ const (
 	ONEDLMAX = 1000
 )
 
-func Do(filepath string, url string) error {
+func Do(url string) error {
 	download := func(ctx context.Context, url string) ([]string, error) {
 		eg, ctx := errgroup.WithContext(ctx)
 		sizeSum, err := DataLength(url)
@@ -54,7 +55,7 @@ func Do(filepath string, url string) error {
 			}
 		}
 	}()
-	if err := bindFiles(divfiles, filepath); err != nil {
+	if err := bindFiles(divfiles, url[strings.LastIndex(url, "/")+1:]); err != nil {
 		return err
 	}
 	return nil

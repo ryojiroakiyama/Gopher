@@ -8,17 +8,17 @@ import (
 )
 
 const (
-	BLACK     = "\033[30m"
-	RED       = "\033[31m"
-	GREEN     = "\033[32m"
-	YELLOW    = "\033[33m"
-	BLUE      = "\033[34m"
-	MAGENTA   = "\033[35m"
-	CYAN      = "\033[36m"
-	WHITE     = "\033[37m"
-	BOLD      = "\033[1m"
-	UNDERLINE = "\033[4m"
-	RESET     = "\033[0m"
+	black     = "\033[30m"
+	red       = "\033[31m"
+	green     = "\033[32m"
+	yellow    = "\033[33m"
+	blue      = "\033[34m"
+	magenta   = "\033[35m"
+	cyan      = "\033[36m"
+	white     = "\033[37m"
+	bold      = "\033[1m"
+	underline = "\033[4m"
+	reset     = "\033[0m"
 )
 
 func printError(err error) {
@@ -26,7 +26,7 @@ func printError(err error) {
 }
 
 func printHelp() {
-	fmt.Println(CYAN, "usage:", RESET)
+	fmt.Println(cyan, "usage:", reset)
 	fmt.Println("  ./download <URL>")
 }
 
@@ -39,7 +39,7 @@ func main() {
 		return
 	}
 	url := os.Args[1]
-	if err := pget.Do("norm.pdf", url); err != nil {
+	if err := pget.Do(url); err != nil {
 		panic(err)
 	}
 }

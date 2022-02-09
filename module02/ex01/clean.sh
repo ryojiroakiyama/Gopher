@@ -1,3 +1,3 @@
 #!/bin/bash
 go clean
-rm -rf norm.pdf
+rm -rf en.norm.pdf
