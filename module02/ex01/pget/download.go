@@ -28,12 +28,16 @@ func Do(filepath string, url string) error {
 			err := err
 			eg.Go(func() error {
 				minRange, maxRange := DownloadRange(i, numDiv, sizeDiv, sizeSum)
-				divfiles[i], err = divDownload(url, minRange, maxRange)
+				select {
+				case <-ctx.Done():
+				default:
+					divfiles[i], err = divDownload(url, minRange, maxRange)
+				}
 				return err
 			})
-			if err := eg.Wait(); err != nil {
-				return nil, err
-			}
+		}
+		if err := eg.Wait(); err != nil {
+			return nil, err
 		}
 		return divfiles, nil
 	}
