@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 
 	"golang.org/x/sync/errgroup"
@@ -15,7 +14,7 @@ const (
 )
 
 func Do(filepath string, url string) (err error) {
-	download := func(ctx context.Context, filepath string, url string) ([]string, error) {
+	download := func(ctx context.Context, url string) ([]string, error) {
 		eg, ctx := errgroup.WithContext(ctx)
 		sizeSum, err := DataLength(url)
 		if err != nil {
@@ -28,33 +27,8 @@ func Do(filepath string, url string) (err error) {
 			i := i
 			eg.Go(func() (err error) {
 				minRange, maxRange := DownloadRange(i, numDiv, sizeDiv, sizeSum)
-				client := &http.Client{}
-				req, err := http.NewRequest("GET", url, nil)
-				if err != nil {
-					return err
-				}
-				req.Header.Add("Range", RangeValue(minRange, maxRange-1))
-				resp, err := client.Do(req)
-				if err != nil {
-					return err
-				}
-				defer resp.Body.Close()
-				tmpfile, err := os.CreateTemp("", "")
-				if err != nil {
-					return err
-				}
-				defer func() {
-					if cerr := tmpfile.Close(); cerr != nil {
-						err = fmt.Errorf("fail to close: %v", cerr)
-					}
-				}()
-				divfiles[i] = tmpfile.Name()
-				fmt.Println("create:", tmpfile.Name())
-				_, err = io.Copy(tmpfile, resp.Body)
-				if err != nil {
-					return err
-				}
-				return nil
+				divfiles[i], err = divDownload(url, minRange, maxRange)
+				return err
 			})
 			if err = eg.Wait(); err != nil {
 				return nil, err
@@ -63,7 +37,7 @@ func Do(filepath string, url string) (err error) {
 		return divfiles, nil
 	}
 
-	divfiles, err := download(context.Background(), filepath, url)
+	divfiles, err := download(context.Background(), url)
 	defer func() {
 		for _, d := range divfiles {
 			if d != "" {

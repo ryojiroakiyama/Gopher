@@ -20,11 +20,11 @@ func NumDivideRange(datasize int64) int {
 func DataLength(url string) (int64, error) {
 	resp, err := http.Head(url)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("DataLength: response: %v", err)
 	}
 	length := resp.ContentLength
 	if length <= 0 {
-		return 0, fmt.Errorf("unknown content length")
+		return 0, fmt.Errorf("DataLength: nknown content length")
 	}
 	return length, nil
 }
