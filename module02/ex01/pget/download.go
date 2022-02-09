@@ -13,7 +13,7 @@ const (
 	ONEDLMAX = 1000
 )
 
-func Do(filepath string, url string) (err error) {
+func Do(filepath string, url string) error {
 	download := func(ctx context.Context, url string) ([]string, error) {
 		eg, ctx := errgroup.WithContext(ctx)
 		sizeSum, err := DataLength(url)
@@ -25,12 +25,13 @@ func Do(filepath string, url string) (err error) {
 		divfiles := make([]string, numDiv)
 		for i := 0; i < numDiv; i++ {
 			i := i
-			eg.Go(func() (err error) {
+			err := err
+			eg.Go(func() error {
 				minRange, maxRange := DownloadRange(i, numDiv, sizeDiv, sizeSum)
 				divfiles[i], err = divDownload(url, minRange, maxRange)
 				return err
 			})
-			if err = eg.Wait(); err != nil {
+			if err := eg.Wait(); err != nil {
 				return nil, err
 			}
 		}
@@ -38,6 +39,9 @@ func Do(filepath string, url string) (err error) {
 	}
 
 	divfiles, err := download(context.Background(), url)
+	if err != nil {
+		return err
+	}
 	defer func() {
 		for _, d := range divfiles {
 			if d != "" {
@@ -46,7 +50,14 @@ func Do(filepath string, url string) (err error) {
 			}
 		}
 	}()
-	dstfile, err := os.Create(filepath)
+	if err := bindFiles(divfiles, filepath); err != nil {
+		return err
+	}
+	return nil
+}
+
+func bindFiles(srcNames []string, dstName string) (err error) {
+	dstfile, err := os.Create(dstName)
 	if err != nil {
 		return err
 	}
@@ -54,13 +65,16 @@ func Do(filepath string, url string) (err error) {
 		if cerr := dstfile.Close(); cerr != nil {
 			err = fmt.Errorf("fail to close: %v", cerr)
 		}
-	}()
-	for _, srcfileName := range divfiles {
-		srcfile, err := os.Open(srcfileName)
 		if err != nil {
-			os.Remove(dstfile.Name())
+			os.Remove(dstName)
+		}
+	}()
+	for _, srcName := range srcNames {
+		srcfile, err := os.Open(srcName)
+		if err != nil {
 			return err
 		}
+		defer srcfile.Close()
 		_, err = io.Copy(dstfile, srcfile)
 		if err != nil {
 			return err
