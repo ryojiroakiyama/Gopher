@@ -13,12 +13,8 @@ const (
 	ONEDLMAX = 1000
 )
 
-type divFile string
-
-//type ctxKeyUrl struct{}
-
 func Do(filepath string, url string) (err error) {
-	download := func(ctx context.Context, filepath string, url string) ([]divFile, error) {
+	download := func(ctx context.Context, filepath string, url string) ([]string, error) {
 		eg, ctx := errgroup.WithContext(ctx)
 		sizeSum, err := DataLength(url)
 		if err != nil {
@@ -26,8 +22,7 @@ func Do(filepath string, url string) (err error) {
 		}
 		numDiv := NumDivideRange(sizeSum)
 		sizeDiv := sizeSum / int64(numDiv)
-		//ctx = context.WithValue(ctx, ctxKeyUrl{}, url)
-		divfiles := make([]divFile, numDiv)
+		divfiles := make([]string, numDiv)
 		for i := 0; i < numDiv; i++ {
 			i := i
 			eg.Go(func() (err error) {
@@ -52,7 +47,7 @@ func Do(filepath string, url string) (err error) {
 						err = fmt.Errorf("fail to close: %v", cerr)
 					}
 				}()
-				divfiles[i] = divFile(tmpfile.Name())
+				divfiles[i] = tmpfile.Name()
 				fmt.Println("create:", tmpfile.Name())
 				_, err = io.Copy(tmpfile, resp.Body)
 				if err != nil {
@@ -71,8 +66,8 @@ func Do(filepath string, url string) (err error) {
 	defer func() {
 		for _, d := range divfiles {
 			if d != "" {
-				fmt.Println("rm:", d)
-				os.Remove(string(d))
+				fmt.Println("remove:", d)
+				os.Remove(d)
 			}
 		}
 	}()
@@ -86,7 +81,7 @@ func Do(filepath string, url string) (err error) {
 		}
 	}()
 	for _, srcfileName := range divfiles {
-		srcfile, err := os.Open(string(srcfileName))
+		srcfile, err := os.Open(srcfileName)
 		if err != nil {
 			os.Remove(dstfile.Name())
 			return err

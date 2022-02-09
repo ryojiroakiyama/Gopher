@@ -36,10 +36,14 @@ func Do(filepath string, url string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer dstFile.Close()
+	defer func() {
+		if cerr := dstFile.Close(); cerr != nil {
+			err = fmt.Errorf("fail to close: %v", cerr)
+		}
+	}()
 	for _, fileName := range readers {
 		get := <-fileName
-		if get == nil {
+		if get == nil { //gorougine側でerrorが起きればnil
 			os.Remove(dstFile.Name())
 			return fmt.Errorf("error")
 		}
@@ -58,11 +62,10 @@ func download(ctx context.Context, index int, numDiv int, sizeDiv int64, sizeSum
 	go func() {
 		defer wg.Done()
 		minRange, maxRange := DownloadRange(index, numDiv, sizeDiv, sizeSum)
-		//fmt.Printf("index=%v, min=%v, max=%v\n", index, minRange, maxRange-1)
 		client := &http.Client{}
 		url, ok := ctx.Value(ctxKeyUrl{}).(string)
 		if !ok {
-			log.Fatal("no")
+			log.Fatal("No value")
 		}
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
