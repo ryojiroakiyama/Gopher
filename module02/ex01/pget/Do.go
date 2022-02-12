@@ -3,8 +3,8 @@ package pget
 
 import (
 	"context"
-	"download/file"
 	"fmt"
+	"github.com/ryojiroakiyama/file"
 	"os"
 	"strings"
 )
