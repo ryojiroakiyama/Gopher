@@ -1,3 +1,4 @@
+//Package pget provides the ability to download in parallel.
 package pget
 
 import (
@@ -8,10 +9,15 @@ import (
 	"strings"
 )
 
+//DivDownLoadMax is the maximum data size
+//that can be downloaded
+//by one of the processes running in parallel.
 const (
 	DivDownLoadMax = 1000
 )
 
+//Do starts the download from the URL passed as a argument.
+//Download process is excuted in parallel.
 func Do(url string) error {
 	divfiles, err := download(context.Background(), url)
 	if err != nil {
