@@ -12,3 +12,13 @@ Implements cat command.
 `./ft_cat`, `./cat file1 - file2`  
 - ex01  
 Implements test of Module00's ex00
+
+# Module02
+- ex00  
+Typing Game.  
+`./typing`  
+Then, type the same word as the question in time.  
+- ex01  
+Parallel download program.  
+`./download URL`  
+
