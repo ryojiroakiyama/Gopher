@@ -1,10 +1,11 @@
 package main
 
 import (
-	"download/pget"
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/ryojiroakiyama/pget/pget"
 )
 
 const (
