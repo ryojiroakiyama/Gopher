@@ -77,8 +77,16 @@ func DrawOmikuji(t TimeGetter) func(w http.ResponseWriter, _ *http.Request) {
 		if t == nil {
 			t = &DefaultTimeGetter{}
 		}
-		omikuji, _ := getFortuneContent(t.Now())
-		j, _ := json.Marshal(omikuji)
+		omikuji, err := getFortuneContent(t.Now())
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		j, err := json.Marshal(omikuji)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
 		w.Write(j)
 	}
 }
