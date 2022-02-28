@@ -43,7 +43,7 @@ func getRandomContent(contents []string) string {
 	return contents[rand.Intn(len(contents))]
 }
 
-func getFortuneContent(t time.Time) (string, error) {
+func getFortuneContent(t TimeGetter) (string, error) {
 	var fortuneContents = [...]string{
 		"Dai-kichi",
 		"Kichi",
@@ -56,7 +56,7 @@ func getFortuneContent(t time.Time) (string, error) {
 	layout := "01-02"
 	startShougatu := "01-01"
 	endShougatu := "01-03"
-	if isShougatu, err := isWithinTime(layout, startShougatu, endShougatu, t); err != nil {
+	if isShougatu, err := isWithinTime(layout, startShougatu, endShougatu, t.Now()); err != nil {
 		return "", err
 	} else if isShougatu {
 		return fortuneContents[0], nil
@@ -77,7 +77,7 @@ func DrawOmikuji(t TimeGetter) func(w http.ResponseWriter, _ *http.Request) {
 		if t == nil {
 			t = &DefaultTimeGetter{}
 		}
-		omikuji, err := getFortuneContent(t.Now())
+		omikuji, err := getFortuneContent(t)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
