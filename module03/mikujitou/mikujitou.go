@@ -2,27 +2,10 @@ package mikujitou
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"time"
 )
-
-var defaultFortuneContents = [...]string{
-	"Dai-kichi",
-	"Kichi",
-	"Chuu-kichi",
-	"Sho-kichi",
-	"Sue-kichi",
-	"Kyo",
-	"Dai-kyo",
-}
-
-var defaultStudyFortuneContents = [...]string{
-	"Good",
-	"Not so good",
-}
 
 type DefaultTimeGetter struct{}
 
@@ -34,34 +17,67 @@ type TimeGetter interface {
 	Now() time.Time
 }
 
+func isWithinTime(layout string, start string, end string, timeNow time.Time) (bool, error) {
+	startTime, err := time.Parse(layout, start)
+	if err != nil {
+		return false, err
+	}
+	timeNowAdjusted, err := time.Parse(layout, timeNow.Format(layout))
+	if err != nil {
+		return false, err
+	}
+	endTime, err := time.Parse(layout, end)
+	if err != nil {
+		return false, err
+	}
+	// !(startTime > timeNowAdjusted) && !(timeNowAdjusted > endTime) -> (startTime <= timeNowAdjusted) && (timeNowAdjusted <= endTime)
+	if !startTime.After(timeNowAdjusted) && !timeNowAdjusted.After(endTime) {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
+func getRandomContent(contents []string) string {
+	rand.Seed(time.Now().Unix())
+	return contents[rand.Intn(len(contents))]
+}
+
+func getFortuneContent(t time.Time) (string, error) {
+	var fortuneContents = [...]string{
+		"Dai-kichi",
+		"Kichi",
+		"Chuu-kichi",
+		"Sho-kichi",
+		"Sue-kichi",
+		"Kyo",
+		"Dai-kyo",
+	}
+	layout := "01-02"
+	startShougatu := "01-01"
+	endShougatu := "01-03"
+	if isShougatu, err := isWithinTime(layout, startShougatu, endShougatu, t); err != nil {
+		return "", err
+	} else if isShougatu {
+		return fortuneContents[0], nil
+	}
+	return getRandomContent(fortuneContents[:]), nil
+}
+
+func getStudyContent() string {
+	var studyContents = [...]string{
+		"Good",
+		"Not so good",
+	}
+	return getRandomContent(studyContents[:])
+}
+
 func DrawOmikuji(t TimeGetter) func(w http.ResponseWriter, _ *http.Request) {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		if t == nil {
 			t = &DefaultTimeGetter{}
 		}
-		timeOfDay := t.Now()
-		layout := "01-02"
-		start, err := time.Parse(layout, "01-01")
-		if err != nil {
-			log.Fatal(err)
-		}
-		now, err := time.Parse(layout, timeOfDay.Format(layout))
-		if err != nil {
-			log.Fatal(err)
-		}
-		end, err := time.Parse(layout, "01-03")
-		if err != nil {
-			log.Fatal(err)
-		}
-		w.Write([]byte(fmt.Sprintf("s:%v, n:%v, e:%v\n", start.String(), now.String(), end.String())))
-		var omikuji string
-		// !(start > now) && !(now > end) -> (start <= now) && (now <= end)
-		if !start.After(now) && !now.After(end) {
-			omikuji = defaultFortuneContents[0]
-		} else {
-			rand.Seed(timeOfDay.Unix())
-			omikuji = defaultFortuneContents[rand.Intn(len(defaultFortuneContents))]
-		}
+		omikuji, _ := getFortuneContent(t.Now())
 		j, _ := json.Marshal(omikuji)
 		w.Write(j)
 	}
