@@ -37,10 +37,10 @@ func from_arg(arg string) string {
 		in = os.Stdin
 	} else {
 		file, err := os.Open(arg)
-		defer file.Close()
 		if err != nil {
 			return strings.TrimPrefix(err.Error(), "open")
 		}
+		defer file.Close()
 		if fileInfo, err := os.Stat(arg); err != nil {
 			return strings.TrimPrefix(err.Error(), "stat")
 		} else if fileInfo.IsDir() {
