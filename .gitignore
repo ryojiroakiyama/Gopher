@@ -1,2 +1,9 @@
-*.sum
+*
 
+!.gitignore
+!**/
+!*.go
+!*.mod
+!*.gif
+!*.png
+!*.jpg

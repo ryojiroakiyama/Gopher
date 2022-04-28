@@ -38,11 +38,11 @@ func from_arg(arg string) string {
 	} else {
 		file, err := os.Open(arg)
 		if err != nil {
-			return strings.TrimPrefix(err.Error(), "open")
+			return strings.TrimPrefix(err.Error(), "open ")
 		}
 		defer file.Close()
 		if fileInfo, err := os.Stat(arg); err != nil {
-			return strings.TrimPrefix(err.Error(), "stat")
+			return strings.TrimPrefix(err.Error(), "stat ")
 		} else if fileInfo.IsDir() {
 			return "Is directory"
 		}
