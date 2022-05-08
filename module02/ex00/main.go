@@ -16,13 +16,15 @@ const (
 )
 
 func nextLine(sc *bufio.Scanner, ch chan<- string) {
-	switch {
-	case sc.Scan():
-		ch <- sc.Text()
-	case sc.Err() == nil:
-		os.Exit(0)
-	default:
-		panic(sc.Err())
+	for {
+		switch {
+		case sc.Scan():
+			ch <- sc.Text()
+		case sc.Err() == nil:
+			os.Exit(0)
+		default:
+			panic(sc.Err())
+		}
 	}
 }
 
@@ -34,11 +36,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "init:", err)
 		return
 	}
+	go nextLine(sc, ch)
 	for {
 		word := randomwords.Out()
 		fmt.Printf("  %v\n", word)
 		fmt.Printf("> ")
-		go nextLine(sc, ch)
 		select {
 		case get := <-ch:
 			if word == get {
@@ -47,8 +49,7 @@ func main() {
 				fmt.Printf("%sno..%s\n", RED, RESET)
 			}
 		case <-time.After(5 * time.Second):
-			fmt.Printf("\n%stimed out (>_<;)%s\n", CYAN, RESET)
-			return
+			fmt.Printf("%stime-out%s\n", RED, RESET)
 		}
 	}
 }
