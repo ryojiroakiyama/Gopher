@@ -18,6 +18,20 @@ type ctxKeyUrl struct{}
 
 var wg sync.WaitGroup
 
+// - errorgroupsとstringのスライスを使わず, waitgroupとチャネルのスライスで実装
+// - 一時的なファイルを生成せず, goroutineからmainへチャネルで直接レスポンスのボディを伝えていた, mainではチャネルをスライスで管理
+// - 全体的な流れ,
+// main:         必要な情報用意→download関数: 事前にチャネルをmainに戻してgoroutine
+// goroutine: ダウンロードしてresponseをmainに送り続ける
+// (キャンセルされるまでresponseをclose()しないための送り続ける処理)
+// main:         responseを受け取って処理が終わればcancel()を実行,
+// contextなので全てのgoroutineでキャンセルされる
+// goroutine: キャンセルを受け取って終了, done()を実行, responseをclose
+// main:          waitでgoroutineの終わりを待つ, done()が全てのgoroutineで呼ばれたら終了
+// (処理が終われば今度は全てのresponseは閉じてほしいのでgoroutineの終了を待つ)
+// - contextのkey
+//     - 非公開型で指定することで当パッケージ内でのみ考慮すれば, パッケージ間でのkey被りを防げる, さらにパッケージ内でも型自体を毎回定義することで被らなくなる
+//     - struct{}で容量の削減, struct{}で渡してるのでおそらくその型のnilがkeyになってるのかな
 func Do(filepath string, url string) (err error) {
 	sizeSum, err := DataLength(url)
 	if err != nil {
