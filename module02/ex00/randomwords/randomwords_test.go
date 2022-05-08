@@ -11,7 +11,7 @@ func TestInit(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "file exists or not",
+			name:    "file not exist",
 			wantErr: true,
 		},
 	}
@@ -29,7 +29,7 @@ func TestOut(t *testing.T) {
 	if got := randomwords.Out(); got != want {
 		t.Errorf("Out() = %v, want = %v", got, want)
 	}
-	if err := randomwords.Init(); err != nil {
+	if err := randomwords.InitWithFile("words.txt"); err != nil {
 		t.Fatal("fail to init", err)
 	}
 	if got := randomwords.Out(); got == "" {
