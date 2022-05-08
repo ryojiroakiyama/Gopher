@@ -18,7 +18,7 @@ const (
 
 const ShortDuration = 10 * time.Second
 
-func nextLine(sc *bufio.Scanner, ch chan<- string, ctx context.Context) {
+func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -36,17 +36,7 @@ func nextLine(sc *bufio.Scanner, ch chan<- string, ctx context.Context) {
 	}
 }
 
-func main() {
-	sc := bufio.NewScanner(os.Stdin)
-	ch := make(chan string)
-	defer close(ch)
-	if err := randomwords.Init(); err != nil {
-		fmt.Fprintln(os.Stderr, "init:", err)
-		return
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), ShortDuration)
-	defer cancel()
-	go nextLine(sc, ch, ctx)
+func runGame(ctx context.Context, ch <-chan string) {
 	for {
 		word := randomwords.Out()
 		fmt.Printf("  %v\n", word)
@@ -64,4 +54,18 @@ func main() {
 			return
 		}
 	}
+}
+
+func main() {
+	sc := bufio.NewScanner(os.Stdin)
+	ch := make(chan string)
+	defer close(ch)
+	if err := randomwords.Init(); err != nil {
+		fmt.Fprintln(os.Stderr, "init:", err)
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), ShortDuration)
+	defer cancel()
+	go nextLine(ctx, sc, ch)
+	runGame(ctx, ch)
 }
