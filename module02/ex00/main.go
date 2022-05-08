@@ -16,7 +16,8 @@ const (
 	RESET = "\033[0m"
 )
 
-const ShortDuration = 10 * time.Second
+// 30秒
+const ShortDuration = 5 * time.Second
 
 func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) {
 	for {
@@ -36,7 +37,9 @@ func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) {
 	}
 }
 
-func runGame(ctx context.Context, ch <-chan string) {
+func runGame(ctx context.Context, ch <-chan string) int32 {
+	var score int32
+Loop:
 	for {
 		word := randomwords.Out()
 		fmt.Printf("  %v\n", word)
@@ -45,15 +48,17 @@ func runGame(ctx context.Context, ch <-chan string) {
 		case get := <-ch:
 			if word == get {
 				fmt.Printf("%sgood!%s\n", GREEN, RESET)
+				score++
 			} else {
 				fmt.Printf("%sno..%s\n", RED, RESET)
 			}
 		case <-time.After(5 * time.Second):
 			fmt.Printf("%stime-out%s\n", RED, RESET)
 		case <-ctx.Done():
-			return
+			break Loop
 		}
 	}
+	return score
 }
 
 func main() {
@@ -67,5 +72,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), ShortDuration)
 	defer cancel()
 	go nextLine(ctx, sc, ch)
-	runGame(ctx, ch)
+	score := runGame(ctx, ch)
+	fmt.Println()
+	fmt.Println("Time's up! Score:", score)
 }
