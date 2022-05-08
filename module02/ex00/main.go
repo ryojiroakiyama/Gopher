@@ -19,25 +19,37 @@ const (
 // 30秒
 const ShortDuration = 5 * time.Second
 
-func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			switch {
-			case sc.Scan():
-				ch <- sc.Text()
-			case sc.Err() == nil:
-				os.Exit(0)
+// write input from sc to ch
+// return channel that announce the end
+func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) <-chan struct{} {
+	quit := make(chan struct{})
+	go func() {
+		defer close(quit)
+		for {
+			select {
+			case <-ctx.Done():
+				return
 			default:
-				panic(sc.Err())
+				switch {
+				case sc.Scan():
+					ch <- sc.Text()
+				case sc.Err() == nil:
+					return
+				default:
+					fmt.Fprintln(os.Stderr, "extLine:", sc.Err())
+					return
+				}
 			}
 		}
-	}
+	}()
+	return quit
 }
 
-func runGame(ctx context.Context, ch <-chan string) int32 {
+func runGame(ctx context.Context) int32 {
+	sc := bufio.NewScanner(os.Stdin)
+	ch := make(chan string)
+	defer close(ch)
+	quit := nextLine(ctx, sc, ch)
 	var score int32
 Loop:
 	for {
@@ -54,6 +66,8 @@ Loop:
 			}
 		case <-time.After(5 * time.Second):
 			fmt.Printf("%stime-out%s\n", RED, RESET)
+		case <-quit:
+			os.Exit(0)
 		case <-ctx.Done():
 			break Loop
 		}
@@ -62,17 +76,13 @@ Loop:
 }
 
 func main() {
-	sc := bufio.NewScanner(os.Stdin)
-	ch := make(chan string)
-	defer close(ch)
 	if err := randomwords.Init(); err != nil {
 		fmt.Fprintln(os.Stderr, "init:", err)
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), ShortDuration)
 	defer cancel()
-	go nextLine(ctx, sc, ch)
-	score := runGame(ctx, ch)
+	score := runGame(ctx)
 	fmt.Println()
 	fmt.Println("Time's up! Score:", score)
 }
