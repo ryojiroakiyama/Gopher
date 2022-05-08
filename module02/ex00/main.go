@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -15,15 +16,22 @@ const (
 	RESET = "\033[0m"
 )
 
-func nextLine(sc *bufio.Scanner, ch chan<- string) {
+const ShortDuration = 10 * time.Second
+
+func nextLine(sc *bufio.Scanner, ch chan<- string, ctx context.Context) {
 	for {
-		switch {
-		case sc.Scan():
-			ch <- sc.Text()
-		case sc.Err() == nil:
-			os.Exit(0)
+		select {
+		case <-ctx.Done():
+			return
 		default:
-			panic(sc.Err())
+			switch {
+			case sc.Scan():
+				ch <- sc.Text()
+			case sc.Err() == nil:
+				os.Exit(0)
+			default:
+				panic(sc.Err())
+			}
 		}
 	}
 }
@@ -36,7 +44,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, "init:", err)
 		return
 	}
-	go nextLine(sc, ch)
+	ctx, cancel := context.WithTimeout(context.Background(), ShortDuration)
+	defer cancel()
+	go nextLine(sc, ch, ctx)
 	for {
 		word := randomwords.Out()
 		fmt.Printf("  %v\n", word)
@@ -50,6 +60,8 @@ func main() {
 			}
 		case <-time.After(5 * time.Second):
 			fmt.Printf("%stime-out%s\n", RED, RESET)
+		case <-ctx.Done():
+			return
 		}
 	}
 }
