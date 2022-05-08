@@ -10,14 +10,15 @@ import (
 )
 
 const (
-	GREEN = "\033[32m"
-	RED   = "\033[31m"
-	CYAN  = "\033[36m"
-	RESET = "\033[0m"
+	green = "\033[32m"
+	red   = "\033[31m"
+	cyan  = "\033[36m"
+	reset = "\033[0m"
 )
 
-// 30秒
-const ShortDuration = 5 * time.Second
+const (
+	ShortDuration = 30 * time.Second
+)
 
 // write input from sc to ch
 // return channel that announce the end
@@ -61,13 +62,13 @@ Loop:
 		select {
 		case get := <-ch:
 			if word == get {
-				fmt.Printf("%sgood!%s\n", GREEN, RESET)
+				fmt.Printf("%sgood!%s\n", green, reset)
 				score++
 			} else {
-				fmt.Printf("%sno..%s\n", RED, RESET)
+				fmt.Printf("%sno..%s\n", red, reset)
 			}
 		case <-time.After(5 * time.Second):
-			fmt.Printf("%stime-out%s\n", RED, RESET)
+			fmt.Printf("%stime-out%s\n", red, reset)
 		case <-scanQuit:
 			os.Exit(0)
 		case <-ctx.Done():

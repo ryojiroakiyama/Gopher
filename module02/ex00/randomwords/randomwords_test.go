@@ -25,24 +25,14 @@ func TestInit(t *testing.T) {
 }
 
 func TestOut(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{
-			name: "normal",
-			want: "",
-		},
+	want := ""
+	if got := randomwords.Out(); got != want {
+		t.Errorf("Out() = %v, want = %v", got, want)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := randomwords.Out(); got != tt.want {
-				t.Errorf("Out() = %v, want = %v", got, tt.want)
-			}
-			//randomwords.Init()
-			//if got := randomwords.Out(); got == "" {
-			//	t.Errorf("after Init(), Out() = %v", got)
-			//}
-		})
+	if err := randomwords.Init(); err != nil {
+		t.Fatal("fail to init", err)
+	}
+	if got := randomwords.Out(); got == "" {
+		t.Errorf("Out() returnes empty string")
 	}
 }

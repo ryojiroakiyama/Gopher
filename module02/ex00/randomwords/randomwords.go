@@ -10,15 +10,13 @@ import (
 	"time"
 )
 
-const (
-	FILENAME = "randomwords/words.txt"
-)
+const DefaultWords = "randomwords/words.txt"
 
 var words []string
 
-//Init make a word list.
-func Init() error {
-	file, err := os.Open(FILENAME)
+//InitWithFile make a word list.
+func InitWithFile(filename string) error {
+	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -33,6 +31,11 @@ func Init() error {
 		return err
 	}
 	return nil
+}
+
+//Init make a default word list.
+func Init() error {
+	return InitWithFile(DefaultWords)
 }
 
 //List put all words in the list to io.Writer.
