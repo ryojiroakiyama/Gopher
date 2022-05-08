@@ -21,7 +21,7 @@ const ShortDuration = 5 * time.Second
 
 // write input from sc to ch
 // return channel that announce the end
-func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) <-chan struct{} {
+func Scan(ctx context.Context, sc *bufio.Scanner, ch chan<- string) <-chan struct{} {
 	quit := make(chan struct{})
 	go func() {
 		defer close(quit)
@@ -36,7 +36,7 @@ func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) <-chan s
 				case sc.Err() == nil:
 					return
 				default:
-					fmt.Fprintln(os.Stderr, "extLine:", sc.Err())
+					fmt.Fprintln(os.Stderr, "nextLine:", sc.Err())
 					return
 				}
 			}
@@ -45,12 +45,14 @@ func nextLine(ctx context.Context, sc *bufio.Scanner, ch chan<- string) <-chan s
 	return quit
 }
 
-func runGame(ctx context.Context) int32 {
+func runGame(ctx context.Context) uint16 {
+	// set up
 	sc := bufio.NewScanner(os.Stdin)
 	ch := make(chan string)
 	defer close(ch)
-	quit := nextLine(ctx, sc, ch)
-	var score int32
+	scanQuit := Scan(ctx, sc, ch)
+
+	var score uint16
 Loop:
 	for {
 		word := randomwords.Out()
@@ -66,7 +68,7 @@ Loop:
 			}
 		case <-time.After(5 * time.Second):
 			fmt.Printf("%stime-out%s\n", RED, RESET)
-		case <-quit:
+		case <-scanQuit:
 			os.Exit(0)
 		case <-ctx.Done():
 			break Loop
