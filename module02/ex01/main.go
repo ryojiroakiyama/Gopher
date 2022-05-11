@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ryojiroakiyama/pget/pget"
+	"github.com/ryojiroakiyama/pget"
 )
 
 const (

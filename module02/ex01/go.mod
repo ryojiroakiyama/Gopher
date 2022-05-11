@@ -1,10 +1,10 @@
 module download
 
-go 1.17
+go 1.18
 
-require github.com/ryojiroakiyama/pget v0.0.0-20220214042157-f7015505ae39
+require github.com/ryojiroakiyama/pget v0.0.0-20220511004319-5366c49561a6
 
 require (
-	github.com/ryojiroakiyama/file v0.0.0-20220212084655-7c6a8e207a96 // indirect
+	github.com/ryojiroakiyama/fileio v0.0.0-20220510013535-f51fe137cbc0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 )
