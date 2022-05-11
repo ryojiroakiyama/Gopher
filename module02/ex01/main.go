@@ -32,8 +32,9 @@ func printHelp() {
 }
 
 func main() {
-	if len(os.Args) == 1 {
+	if len(os.Args) != 2 {
 		printError(errors.New("invalid argument"))
+		printHelp()
 		return
 	} else if os.Args[1] == "-h" || os.Args[1] == "--help" {
 		printHelp()
@@ -41,6 +42,6 @@ func main() {
 	}
 	url := os.Args[1]
 	if err := pget.Do(url); err != nil {
-		panic(err)
+		printError(err)
 	}
 }
