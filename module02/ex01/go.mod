@@ -2,7 +2,7 @@ module download
 
 go 1.18
 
-require github.com/ryojiroakiyama/pget v0.0.0-20220511004319-5366c49561a6
+require github.com/ryojiroakiyama/pget v0.0.0-20220511004603-082986e58232
 
 require (
 	github.com/ryojiroakiyama/fileio v0.0.0-20220510013535-f51fe137cbc0 // indirect
