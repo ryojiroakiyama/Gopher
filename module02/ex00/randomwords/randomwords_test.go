@@ -2,7 +2,7 @@ package randomwords_test
 
 import (
 	"testing"
-	"typing/randomwords"
+	"typing_game/randomwords"
 )
 
 func TestInit(t *testing.T) {

@@ -4,6 +4,7 @@ package randomwords
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"math/rand"
 	"os"
@@ -12,7 +13,7 @@ import (
 
 const DefaultWords = "randomwords/words.txt"
 
-var words []string
+var wordlist []string
 
 //InitWithFile make a word list.
 func InitWithFile(filename string) error {
@@ -25,10 +26,13 @@ func InitWithFile(filename string) error {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		words = append(words, line)
+		wordlist = append(wordlist, line)
 	}
 	if err := scanner.Err(); err != nil {
 		return err
+	}
+	if len(wordlist) <= 0 {
+		return fmt.Errorf("words is empty")
 	}
 	return nil
 }
@@ -40,7 +44,7 @@ func Init() error {
 
 //List put all words in the list to io.Writer.
 func List(out io.Writer) error {
-	for _, word := range words {
+	for _, word := range wordlist {
 		if _, err := io.WriteString(out, word+"\n"); err != nil {
 			return err
 		}
@@ -49,11 +53,14 @@ func List(out io.Writer) error {
 }
 
 //Out return a word in the list randomly.
-func Out() (word string) {
-	len := len(words)
+func Out() string {
+	var outword string
+	len := len(wordlist)
 	if 0 < len {
-		rand.Seed(time.Now().Unix())
-		word = words[rand.Intn(len)]
+		rand.Seed(time.Now().UnixNano())
+		outindex := rand.Intn(len)
+		outword = wordlist[outindex]
+		wordlist = append(wordlist[:outindex], wordlist[outindex+1:]...) // remove outword from wordlist
 	}
-	return word
+	return outword
 }

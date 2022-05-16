@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"typing/randomwords"
+	"typing_game/randomwords"
 )
 
 const (
@@ -57,6 +57,9 @@ func runGame(ctx context.Context) uint16 {
 Loop:
 	for {
 		word := randomwords.Out()
+		if word == "" {
+			break Loop
+		}
 		fmt.Printf("  %v\n", word)
 		fmt.Printf("> ")
 		select {
@@ -87,5 +90,5 @@ func main() {
 	defer cancel()
 	score := runGame(ctx)
 	fmt.Println()
-	fmt.Println("Time's up! Score:", score)
+	fmt.Println("Time's up! or all words done, Score:", score)
 }
