@@ -20,8 +20,8 @@ const (
 	ShortDuration = 30 * time.Second
 )
 
-// write input from sc to ch
-// return channel that announce the end
+// Write input from sc to ch
+// return channel that announce the end (like context)
 func Scan(ctx context.Context, sc *bufio.Scanner, ch chan<- string) <-chan struct{} {
 	quit := make(chan struct{})
 	go func() {
