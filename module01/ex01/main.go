@@ -2,6 +2,17 @@
 //in the directory passed as argument.
 package main
 
+/*
+ * module00からの変更点
+ * - 関数を分けてテストしやすいようにした, DoでWalkDirやらずmainでやる
+ * →Doは渡されたパスに対して実行する
+ * - structの要素をprivateにしてるので, テストでstructを用意できない
+ * osパッケージでstruct検索かけたらほとんど大文字だったので大文字にしてみる
+ * →でもテストのためにpublicにするのもどうかと思う
+ * - テストのしやすさと結合度を下げるために関数を分けたが, 結局その中のいくつかしかpublicにしないと, 外部からはその関数にしかアクセスしないため, 結合度は下がってないしテストは単体ではなく統合テストになってしまう
+ * publicを増やすべきなのか, export_test.goでpublic扱いできるようにして単体テストするべきなのかわからない
+ */
+
 import (
 	"errors"
 	"flag"
@@ -9,8 +20,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-
-	"github.com/ryojiroakiyama/convert/imgconv"
 )
 
 const (
